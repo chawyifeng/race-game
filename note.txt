@@ -1,0 +1,28 @@
+check if can realtime update the ranking 
+
+
+check path problem 
+
+
+save your best into db?
+
+
+need to share the ranking page to public?
+
+
+back to main page 
+
+
+share the pros and cons with choong 
+
+
+perform real time result?
+
+
+ranking -- show to public  -- name and best time 
+
+
+host in cfmoto 
+
+uncomment sw.js back 
+
