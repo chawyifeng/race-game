@@ -1,28 +1,35 @@
-check if can realtime update the ranking 
+==========================================================
+question: 
+
+-- host online in cfmoto (url: cfmoto.com.my/racing-start timer)
+
+*** 1 player can play multiple time - until submit 
+
+*** use localstoreage to save cust info?
+
+-- click first time then only popup the info , after that dont need popup ady 
+
+design provided ady -- in email 
+
+top 10 only dont need use datatable  in ranking 
+
+save best time only when user click submit  (unlimited attempt)
+
+overall ranking -  live ranking 
+
+dont need do admin side -- can export later 
+
+acceptable to apply login page in popup 
+
+phone number as primary key 
 
 
-check path problem 
+ if(document.location.pathname.matches(/your-page\.html/)) { -- not yet do 
+ when detect is ranking page run select race leader query
 
 
-save your best into db?
 
 
-need to share the ranking page to public?
 
 
-back to main page 
-
-
-share the pros and cons with choong 
-
-
-perform real time result?
-
-
-ranking -- show to public  -- name and best time 
-
-
-host in cfmoto 
-
-uncomment sw.js back 
 

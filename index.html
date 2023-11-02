@@ -1,200 +1,379 @@
-
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>F1 Start Timer</title>
-  <link rel="icon" sizes="600x600" href="https://cdn.glitch.com/e0396011-48ac-44c9-bf55-6e11b025757d%2Fflag.png?1500283332796">
+  <title>Racing Start Timer</title>
+  <link rel="icon" sizes="600x600"
+    href="https://cdn.glitch.com/e0396011-48ac-44c9-bf55-6e11b025757d%2Fflag.png?1500283332796">
   <!--  provides information about a web application. -->
   <!-- <link rel="manifest" href="manifest.json"> -->
   <meta name="theme-color" content="#ffffff">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
-body, html {
-  height: 100%;
-  font-family: sans-serif;
-  overflow: hidden;
-}
+    body,
+    html {
+      height: 100%;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
 
-body {
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  justify-content: center;
-}
+    body {
+      display: flex;
+      flex-flow: column;
+      align-items: center;
+      justify-content: center;
+    }
 
-.light {
-  border-radius: 100%;
-  background: #222;
-  margin: 10px;
-}
+    .light {
+      border-radius: 100%;
+      background: #222;
+      margin: 10px;
+    }
 
-.light::before {
-  content: '';
-  display: block;
-  padding-top: 100%;
-}
+    .light::before {
+      content: '';
+      display: block;
+      padding-top: 100%;
+    }
 
-.light-strip.on .light:nth-child(1n+3) {
-  background: red;
-}
+    .light-strip.on .light:nth-child(1n+3) {
+      background: red;
+    }
 
-.f1-lights {
-  display: flex;
-  position: relative;
-  width: 100%;
-  max-width: 520px;
-}
+    .f1-lights {
+      display: flex;
+      position: relative;
+      width: 100%;
+      max-width: 520px;
+      margin: 5vh auto auto auto;
+    }
 
-.light-strip {
-  background: black;
-  border-radius: 11px;
-  margin: 0 2px;
-  position: relative;
-  flex: 1;
-}
+    /* @media (min-width: 1500px) {
+      .f1-lights {
+        margin: auto auto auto auto;
+      }
+    } */
 
-@media (min-width: 435px) {
-  .light-strip {
-    margin: 0 5px;
-    border-radius: 14px;
-  }
-}
+    .light-strip {
+      background: black;
+      border-radius: 11px;
+      margin: 0 2px;
+      position: relative;
+      flex: 1;
+    }
 
-.back-board {
-  position: absolute;
-  left: 5px;
-  right: 5px;
-  top: 50%;
-  height: 5%;
-  background: #000;
-  transform: translateY(-50%);
-}
+    @media (min-width: 435px) {
+      .light-strip {
+        margin: 0 5px;
+        border-radius: 14px;
+      }
+    }
 
-p {
-  font-size: 18px;
-  text-align: center;
-  line-height: 1.4;
-  margin: 1em;
-  margin-bottom: 0;
-}
+    .back-board {
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      top: 50%;
+      height: 5%;
+      background: #000;
+      transform: translateY(-50%);
+    }
 
-.time {
-  font-size: 90px;
-  font-size: 12vw;
-  line-height: 1;
-  margin: 1rem;
-  text-transform: uppercase;
-  will-change: transform;
-  text-align: center;
-}
+    p {
+      font-size: 18px;
+      text-align: center;
+      line-height: 1.4;
+      margin: 1em;
+      margin-bottom: 0;
+    }
 
-.time.anim {
-  animation: bang 0.1s cubic-bezier(0.23, 1, 0.32, 1);
-}
+    .time {
+      font-size: 90px;
+      font-size: 12vw;
+      line-height: 1;
+      margin: 1rem;
+      text-transform: uppercase;
+      will-change: transform;
+      text-align: center;
+    }
 
-.best, .credit {
-  font-size: 18px;
-  text-align: center;
-  line-height: 1.4;
-}
+    .time.anim {
+      animation: bang 0.1s cubic-bezier(0.23, 1, 0.32, 1);
+    }
 
-@keyframes bang {
-  from {
-    transform: scale(2);
-  }
-}
+    .best,
+    .credit {
+      font-size: 18px;
+      text-align: center;
+      line-height: 1.4;
+    }
 
-a:link {
-  text-decoration: none;
-}
+    @keyframes bang {
+      from {
+        transform: scale(2);
+      }
+    }
 
-.spinner{
-  margin-right: 0.5vw;
-  display: none;
-}
+    a:link {
+      text-decoration: none;
+    }
+
+    .spinner {
+      margin-right: 0.5vw;
+      display: none;
+    }
+
+    .clickable-area {
+      width: 100%;
+      height: 100%;
+    }
+
+    .main-container {
+      padding: 3vw;
+      position: absolute;
+      width: 100%;
+    }
+
+    .rectBtn {
+      color: black;
+      border: 1px solid black;
+      display: inline-block;
+      font-family: Montserrat, sans-serif;
+      font-size: .8333333333vw;
+      font-weight: 700;
+      height: 2.7083333333vw;
+      line-height: 2.7083333333vw;
+      text-align: center;
+      width: 9.6354166667vw;
+      margin-left: 2vw;
+    }
+
+    .rectBtn:hover {
+      color: black;
+    }
+
+    a,
+    a:focus,
+    a:hover,
+    a:visited {
+      text-decoration: none;
+    }
+
+    .popup-title {
+      margin-bottom: 6vh;
+      margin-top: 6vh;
+      font-weight: 900;
+      font-style: italic;
+      text-shadow: 0px 1px, 1px 0px, 1px 0px;
+    }
+
+    .end-game-title{
+      margin-bottom: 6vh;
+      margin-top: 6vh;
+      font-weight: 900;
+      font-style: italic;
+      text-shadow: 0px 1px, 1px 0px, 1px 0px;
+      font-size: 2rem;
+    }
+
+    /* for device more than 1280px */
+    @media only screen and (min-width: 1280px) {
+      .end-game-title{
+        font-size: 3rem;
+      }
+    }
+
+    .standardBtn {
+      font-size: 3rem;
+      padding-left: 2em;
+      padding-right: 2em;
+    }
+
+    /* for device more than 1280px */
+    /* @media only screen and (min-width: 1280px) {
+      .standardBtn {
+        font-size: 2vw;
+      }
+    } */
+
+    .popupBtn {
+      font-size: 1.5rem;
+      padding-left: 2em;
+      padding-right: 2em;
+    }
+
+    /* for device more than 1280px */
+    /* @media only screen and (min-width: 1280px) {
+      .popupBtn {
+        font-size: 3vw;
+      }
+    } */
+
+    .img-logo {
+      width: 70%;
+      height: auto;
+    }
+
+    .instruction {
+      margin: 15vh auto auto auto;
+    }
+
+
+    @font-face {
+      font-family: SupremeLL;
+      src: url('assets/SupremeLL-Regular.otf');
+    }
+
+    * {
+      font-family: SupremeLL;
+    }
 
   </style>
 </head>
+
 <body>
-  <div id="f1-lights" class="f1-lights">
-    <div class="back-board"></div>
-    <div class="light-strip">
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
+  <div id="clickable-area" class="clickable-area">
+    <div class="main-container" id="main-container">
+        <p class="instruction">Tap/click when you're ready to race, then tap again when the lights go out.</p>
+        <div id="f1-lights" class="f1-lights">
+          <div class="back-board"></div>
+          <div class="light-strip">
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+          </div>
+          <div class="light-strip">
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+          </div>
+          <div class="light-strip">
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+          </div>
+          <div class="light-strip">
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+          </div>
+          <div class="light-strip">
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+          </div>
+        </div>
+
+        <div class="results">
+          <div class="time">00.000</div>
+          <div class="best">Your best: <span>00.000</span>
+            <a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>
+          </div>
+        </div>
+
+        <div class="text-center mt-3">
+          <button id="submitResultBtn" class="btn btn-secondary pt-2 pb-2 pl-5 pr-5" type="button"><i
+              class="fa fa-spinner fa-spin spinner"></i>Submit</button>
+        </div>
     </div>
-    <div class="light-strip">
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-    </div>
-    <div class="light-strip">
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-    </div>
-    <div class="light-strip">
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-    </div>
-    <div class="light-strip">
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-      <div class="light"></div>
-    </div>
-  </div>
-  
-  <p>Tap/click when you're ready to race, then tap again when the lights go out.</p>
-  <div class="results">
-    <div class="time">00.000</div>
-    <div class="best">Your best: <span>00.000</span></div>
-    <div class="best"><a href="ranking/">Overall Ranking</a></div>
   </div>
 
   <div id="popupCust" class="modal" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Enter Your Information</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
+        <form id="form-popupCust">
+          <div class="modal-header">
+            <!-- <h5 class="modal-title">Enter Your Information</h5> -->
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
           <div class="modal-body">
             <div class="form-group">
-                <label>Name</label>
-                <input class="form-control" id="txtName" name="txtName" type="text" placeholder="Please Enter Your Name" required />
+              <center><img class="img-logo" src="assets/cfmoto_logo_black.png"></center>
             </div>
             <div class="form-group">
-                <label>Email</label>
-                <input class="form-control" id="txtEmail" name="txtEmail" type="email" placeholder="Please Enter Your Email" required/>
+              <h1 class="text-center popup-title"> RACE START TIMER</h1>
             </div>
             <div class="form-group">
-                <label>Contact No.</label>
-                <input class="form-control" id="txtContact" name="txtContact" type="tel" placeholder="Please Enter Your Contact No." required />
+              <label>Name</label>
+              <input class="form-control" id="txtName" name="txtName" type="text" required />
             </div>
             <div class="form-group">
-                <div class="alert"></div>
+              <label>Phone Number: <small>e.g. 0127892345</small></label>
+              <input class="form-control" id="txtContact" name="txtContact" type="tel" required />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input class="form-control" id="txtEmail" name="txtEmail" type="email" required />
+            </div>
+            <div class="form-group">
+              <div class="alert"></div>
+            </div>
+            <div class="form-group text-center">
+              <button id="submitBtn" class="btn btn-secondary standardBtn" type="submit"><i
+                  class="fa fa-spinner fa-spin spinner"></i>Start</button>
+            </div>
+            <div class="form-group">
+              <center><img class="img-logo" src="assets/CFMOTO_tagline 3bar.png"></center>
             </div>
           </div>
-        <div class="modal-footer">
-          <button id="submitBtn" class="btn btn-primary" type="button"><i class="fa fa-spinner fa-spin spinner"></i>Play</button>
-        </div>
+        </form>
       </div>
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <div id="popupConfirm" class="modal" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <form id="form-Confirm">
+          <div class="modal-header">
+            <h2 class="modal-title">Confirmation</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <center><img class="img-logo mt-3 mb-3" src="assets/cfmoto_logo_black.png"></center>
+            </div>
+            <div class="form-group">
+              <p class="text-left mt-3 mb-3">Are you sure you want to submit the result?</p>
+            </div>
+            <div class="form-group text-center">
+              <button id="confirmBtn" class="btn btn-secondary m-3 popupBtn" type="button"><i
+                class="fa fa-spinner fa-spin spinner"></i>Submit</button>
+              <button id="cancelBtn" class="btn btn-secondary m-3 popupBtn" type="button"><i
+                  class="fa fa-spinner fa-spin spinner"></i>Cancel</button>
+            </div>
+            <div class="form-group">
+              <div class="alert"></div>
+            </div>
+            <div class="form-group">
+              <center><img class="img-logo mt-3" src="assets/CFMOTO_tagline 3bar.png"></center>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
   <script defer src="main.js"></script>
 </body>
+
 </html>

@@ -191,7 +191,7 @@ $(document).ready(function() {
                     $("#submitBtn").attr("disabled", "disabled"); 
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    $('#form-popupCust .alert').addClass('alert-danger');
+                    $('#form-popupCust .alert').removeClass('alert-success').addClass('alert-danger');
                     $(' #form-popupCust .alert').html("<p>Status Code: " + jqXHR.status + "</p>" +
                         "<p>errorThrown: " + errorThrown + "</p>" +
                         "<p>jqXHR.responseText: " + jqXHR.responseText + "</p>");
@@ -199,7 +199,7 @@ $(document).ready(function() {
                 success: function(data) {
                     if (data.response == 'ok') {
                         $("#submitBtn").removeAttr("disabled");
-                        $('#form-popupCust .alert').addClass('alert-success');
+                        $('#form-popupCust .alert').removeClass('alert-danger').addClass('alert-success');
                         $('#form-popupCust .alert').html('<div style="height:50px;">' + data.messages + '</div>');
                         $('#form-popupCust .alert').fadeOut('slow');
                         //close popup modal here
