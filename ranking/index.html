@@ -10,35 +10,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" /> -->
     <style>
         .nav {
             margin-top: 3rem;
             margin-left: 3rem;
             position: relative;
-        }
-
-        .rectBtn {
-            color: black;
-            border: 1px solid black;
-            display: inline-block;
-            font-family: Montserrat, sans-serif;
-            font-size: .8333333333vw;
-            font-weight: 700;
-            height: 2.7083333333vw;
-            line-height: 2.7083333333vw;
-            text-align: center;
-            width: 9.6354166667vw;
-            margin-left: 2vw;
-            position: relative;
-        }
-
-        .rectBtn svg {
-            position: absolute;
-            width: 2vw;
-        }
-
-        .rectBtn:hover {
-            color: black;
         }
 
         a,
@@ -58,8 +35,6 @@
             }
         }
 
-
-
         .title {
             font-weight: 900;
             font-style: italic;
@@ -74,43 +49,78 @@
         * {
             font-family: SupremeLL;
         }
+
+        /* pure table element */
+        #leaderboard #tbody tr {
+            /* width: auto;
+            display: table-row;
+            position: absolute; */
+            -moz-transition-duration: 1s;
+            -webkit-transition-duration: 1s;
+            -ms-transition-duration: 1s;
+            transition-duration: 1s;
+        }
     </style>
 </head>
 
 <body>
-    <div class="nav">
+    <!-- <div class="nav">
         <a id="backToGameBtn" class="btn btn-secondary" href="../"><i class="fa fa-arrow-left" aria-hidden="true"></i>
             Back To Game</a>
-    </div>
-    </div>
+    </div> -->
     <div id="main-container" class="p-3">
-        <h1 class="title text-center mb-5 mt-3">RACE LEADER</h1>
-        <table class="table table-striped">
+        <h1 class="title text-center mb-5 mt-5">RACE LEADER</h1>
+        <table id="leaderboard" class="table table-striped">
             <thead>
                 <tr class="text-center">
-                    <th scope="col" class="col-1">No.</th>
-                    <th scope="col" class="col-7">Name</th>
-                    <th scope="col" class="col-4">Time</th>
+                    <th class="col-1">No.</th>
+                    <th class="col-7">Name</th>
+                    <th class="col-4">Time</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>1.</td>
-                    <td>Ali</td>
-                    <td class="text-center">1min</td>
-                </tr>
-                <tr>
-                    <td>2.</td>
-                    <td>Abu</td>
-                    <td class="text-center">2min</td>
-                </tr>
-                <tr>
-                    <td>3.</td>
-                    <td>Otto</td>
-                    <td class="text-center">3min</td>
-                </tr>
+            <tbody id="tbody">
             </tbody>
         </table>
     </div>
 
+    <!-- <div id="main-container" class="p-3">
+        <h1 class="title text-center mb-5 mt-3">RACE LEADER</h1>
+        <div id="table-container" class="divTable">
+            <div id="table-header" class="divRowHeader text-center">
+                <div class="divCell"><b>No.</b></div>
+                <div class="divCell"><b>Name</b></div>
+                <div class="divCell"><b>Time</b></div>
+            </div>
+            <div class="divRow">
+                <a class="moveUp">
+                    <div class="divCell rank"><b>1.</b></div>
+                    <div class="divCell"><b>Ali</b></div>
+                    <div class="divCell"><b>2.00</b></div>
+                </a>
+            </div>
+            <div class="divRow">
+                <a class="moveUp">
+                    <div class="divCell rank"><b>2.</b></div>
+                    <div class="divCell"><b>Abu</b></div>
+                    <div class="divCell"><b>3.00</b></div>
+                </a>
+            </div>
+            <div class="divRow">
+                <a class="moveUp">
+                    <div class="divCell rank"><b>3.</b></div>
+                    <div class="divCell"><b>Ahkau</b></div>
+                    <div class="divCell"><b>4.00</b></div>
+                </a>
+            </div>
+        </div>
+    </div> -->
+
+
+
+    <!-- socket io  -->
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script type="module" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script defer src="ranking.js"></script>
 </body>

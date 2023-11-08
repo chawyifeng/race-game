@@ -1,17 +1,17 @@
 pending:
 **** check all custom button css again for mobile view
-check if can realtime update the ranking -- if cannot refresh every 5 sec
-save your best into db?
-ranking -- show to public  -- name and best time 
 host in cfmoto
 check if mobile can click 
-change table structure to save best time 
+
+
+////////
 validation still have problem 
 overall ranking button vertical align got problem for mobile view 
 
-
-
 *** check cookie time with choong 
 
+*** probably need to use another thing other than cookie as user may chnage browser and play again
 
-*** probably need to use another thing other than cookie as user may chnage browser and play again 
+03/11/2023
+
+later check all form validation

@@ -137,25 +137,7 @@
       position: absolute;
       width: 100%;
     }
-
-    .rectBtn {
-      color: black;
-      border: 1px solid black;
-      display: inline-block;
-      font-family: Montserrat, sans-serif;
-      font-size: .8333333333vw;
-      font-weight: 700;
-      height: 2.7083333333vw;
-      line-height: 2.7083333333vw;
-      text-align: center;
-      width: 9.6354166667vw;
-      margin-left: 2vw;
-    }
-
-    .rectBtn:hover {
-      color: black;
-    }
-
+    
     a,
     a:focus,
     a:hover,
@@ -232,6 +214,10 @@
       font-family: SupremeLL;
     }
 
+    .results{
+      cursor: default;
+    }
+
   </style>
 </head>
 
@@ -276,7 +262,11 @@
         <div class="results">
           <div class="time">00.000</div>
           <div class="best">Your best: <span>00.000</span>
-            <a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>
+            <!-- <a href="ranking">
+              <div id="liveRankingBtn" class="btn btn-secondary ml-3 p-3">
+                Live Ranking
+              </div>
+            </a> -->
           </div>
         </div>
 
@@ -309,8 +299,8 @@
               <input class="form-control" id="txtName" name="txtName" type="text" required />
             </div>
             <div class="form-group">
-              <label>Phone Number: <small>e.g. 0127892345</small></label>
-              <input class="form-control" id="txtContact" name="txtContact" type="tel" required />
+              <label>Phone Number: <small>e.g. 012-7892345</small></label>
+              <input class="form-control" id="txtContact" name="txtContact" type="tel" minlength="11" required /> <!-- minlength 10 including dash-->
             </div>
             <div class="form-group">
               <label>Email</label>
@@ -373,6 +363,12 @@
     integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
     crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-mask-plugin@1.14.16/dist/jquery.mask.min.js"></script>
+
+  <!-- socket io  -->
+  <!-- <script src="/socket.io/socket.io.js"></script> -->
+  <!-- <script src="/racing-start-timer/socket.io/socket.io.js"></script> -->
+  <script type="module" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script defer src="main.js"></script>
 </body>
 

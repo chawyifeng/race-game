@@ -1,0 +1,17 @@
+2. 
+
+host the app online , 
+test phone can start game?
+check css
+
+-
+-------
+3. 
+add additional feature,
+
+cookie 
+game validation done 
+
+==============================================
+1.
+get data from phone and validate *****

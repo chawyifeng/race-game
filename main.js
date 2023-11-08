@@ -1,125 +1,147 @@
-const lights = Array.prototype.slice.call(document.querySelectorAll('.light-strip'));
-const time = document.querySelector('.time');
-const best = document.querySelector('.best span');
-let bestTime = Number(localStorage.getItem('best')) || Infinity;
+//=======================================================================
+// core game function
+//=======================================================================
+const lights = Array.prototype.slice.call(
+  document.querySelectorAll(".light-strip")
+);
+const time = document.querySelector(".time");
+const best = document.querySelector(".best span");
+let bestTime = Number(localStorage.getItem("best")) || Infinity;
 let started = false;
 let lightsOutTime = 0;
 let raf;
 let timeout;
 let timeStamp;
-
+const socket = io();
+// const socket = io.connect('http://localhost:3000/');
 
 function formatTime(time) {
-    time = Math.round(time);
-    let outputTime = time / 1000;
-    if (time < 10000) {
-        outputTime = '0' + outputTime;
-    }
-    while (outputTime.length < 6) {
-        outputTime += '0';
-    }
-    return outputTime;
+  time = Math.round(time);
+  let outputTime = time / 1000;
+  if (time < 10000) {
+    outputTime = "0" + outputTime;
+  }
+  while (outputTime.length < 6) {
+    outputTime += "0";
+  }
+  return outputTime;
 }
 
 if (bestTime != Infinity) {
-    best.textContent = formatTime(bestTime);
+  best.textContent = formatTime(bestTime);
 
-    //insert best time into database here 
+  //insert best time into database here
 }
 
 function start() {
-    for (const light of lights) {
-        light.classList.remove('on');
+  for (const light of lights) {
+    light.classList.remove("on");
+  }
+
+  time.textContent = "00.000";
+  time.classList.remove("anim");
+
+  lightsOutTime = 0;
+  let lightsOn = 0;
+  const lightsStart = performance.now(); //returns a high resolution timestamp in milliseconds
+
+  function frame(now) {
+    const toLight = Math.floor((now - lightsStart) / 1000) + 1;
+
+    if (toLight > lightsOn) {
+      for (const light of lights.slice(0, toLight)) {
+        light.classList.add("on");
+      }
     }
 
-    time.textContent = '00.000';
-    time.classList.remove('anim');
-
-    lightsOutTime = 0;
-    let lightsOn = 0;
-    const lightsStart = performance.now(); //returns a high resolution timestamp in milliseconds
-
-    function frame(now) {
-        const toLight = Math.floor((now - lightsStart) / 1000) + 1;
-
-        if (toLight > lightsOn) {
-            for (const light of lights.slice(0, toLight)) {
-                light.classList.add('on');
-            }
+    if (toLight < 5) {
+      raf = requestAnimationFrame(frame);
+    } else {
+      const delay = Math.random() * 4000 + 1000;
+      timeout = setTimeout(() => {
+        for (const light of lights) {
+          light.classList.remove("on");
         }
-
-        if (toLight < 5) {
-            raf = requestAnimationFrame(frame);
-        } else {
-            const delay = Math.random() * 4000 + 1000;
-            timeout = setTimeout(() => {
-                for (const light of lights) {
-                    light.classList.remove('on');
-                }
-                lightsOutTime = performance.now();
-            }, delay);
-        }
+        lightsOutTime = performance.now();
+      }, delay);
     }
+  }
 
-    raf = requestAnimationFrame(frame);
+  raf = requestAnimationFrame(frame);
 }
 
 function end(timeStamp) {
-    cancelAnimationFrame(raf);
-    clearTimeout(timeout);
+  cancelAnimationFrame(raf);
+  clearTimeout(timeout);
 
-    if (!lightsOutTime) {
-        time.textContent = "Jump start!";
-        time.classList.add('anim');
-        return;
-    } else {
-        const thisTime = timeStamp - lightsOutTime; //start time - light out time 
-        
-        time.textContent = formatTime(thisTime);
+  if (!lightsOutTime) {
+    time.textContent = "Jump start!";
+    time.classList.add("anim");
+    return;
+  } else {
+    const thisTime = timeStamp - lightsOutTime; //start time - light out time
 
-        if (thisTime < bestTime) {
-            bestTime = thisTime;
-            console.log(bestTime);
-            best.textContent = time.textContent;
-            localStorage.setItem('best', thisTime);
-        }
+    time.textContent = formatTime(thisTime);
 
-        time.classList.add('anim');
+    if (thisTime < bestTime) {
+      bestTime = thisTime;
+      console.log(bestTime);
+      best.textContent = time.textContent;
+      localStorage.setItem("best", thisTime);
     }
+
+    time.classList.add("anim");
+  }
 }
 
 function tap(event) {
-    if (!started && event.target && event.target.closest && event.target.closest('a')) return;
-    event.preventDefault();
+  if (
+    !started &&
+    event.target &&
+    event.target.closest &&
+    event.target.closest("a")
+  )
+    return;
+  event.preventDefault();
 
-    if (started) {
-        //end game 
-        end(performance.now());
-        started = false;
-    } else {
-        //start game 
-        startGame();
-    }
+  if (started) {
+    //end game
+    end(performance.now());
+    started = false;
+  } else {
+    //start game
+    startGame();
+  }
 }
 
-//tap on light only 
-const clickableArea = document.querySelector('.clickable-area');
+//tap on light only
+const clickableArea = document.querySelector(".clickable-area");
 
-clickableArea.addEventListener('touchstart', tap, {
-    passive: false
+clickableArea.addEventListener("touchstart", tap, {
+  passive: false,
 }); //for mobile
 
-clickableArea.addEventListener('mousedown', event => {
-    if (event.button === 0) tap(event); //left click
-}, {
-    passive: false
-});
+clickableArea.addEventListener(
+  "mousedown",
+  (event) => {
+    if (event.button === 0){
+      tap(event); //left click
+    } 
+  },
+  {
+    passive: false,
+  }
+);
 
-clickableArea.addEventListener('keydown', event => {
-    if (event.key == ' ') tap(event); //space?
-}, {
-    passive: false
-});
+clickableArea.addEventListener(
+  "keydown",
+  (event) => {
+    if (event.key == " ") tap(event); //space?
+  },
+  {
+    passive: false,
+  }
+);
 
 // addEventListener('touchstart', tap, {
 //     passive: false
@@ -137,182 +159,214 @@ clickableArea.addEventListener('keydown', event => {
 //     passive: false
 // });
 
-    if (navigator.serviceWorker) { // check if support service worker 
-        navigator.serviceWorker.register('sw.js');
-    }
-    //=======================================================================
-                                    // core game function
-    //=======================================================================
-    //show popup modal 
-    function startGame() {
-        var CustPopupModal = Cookies.get('racing_start_timer_popup_modal');
-        if(CustPopupModal != 'true'){
-            // user have to fill in the info to start game 
-            Cookies.set('racing_start_timer_popup_modal', true, {expires: 1});
-            $("#popupCust").modal('show');
-        }else{
-            //direct start game 
-            start();
-            started = true;
-        }
-    }
+if (navigator.serviceWorker) {
+  // check if support service worker
+  navigator.serviceWorker.register("sw.js");
+}
 
+//=======================================================================
+// core game function
+//=======================================================================
 
-    function submitFormPopUpCust(){ // on submit
+//show popup modal
+function startGame() {
+  let x = document.cookie;
 
-        var paramPhoneNo = $("#txtContact").val(); //get param phone no 
-        var cookiePhoneNo = Cookies.get('racing_start_timer_phoneNo');
-        if(cookiePhoneNo == null){
-            // user have to fill in the info to start game 
-            Cookies.set('racing_start_timer_phoneNo', paramPhoneNo, {expires: 1});
-        }
+  // var CustPopupModal = Cookies.get("racing_start_timer_popup_modal");
+  let CustPopupModal = getCookie("racing_start_timer_popup_modal");
 
-        var formData = {
-            insertCustInfo: true,
-            txtName: $("#txtName").val(),
-            txtEmail: $("#txtEmail").val(),
-            txtContact: $("#txtContact").val(),
-        };
+  if (CustPopupModal != "true") {
+    // var now = new Date();
+    // var expire = new Date();
 
-        $.ajax({
-            type: 'POST',
-            url: "database/insertCustInfo.php",
-            data: formData,
-            dataType: 'JSON',
-            beforeSend: function() {
-                $("#submitBtn").attr("disabled", "disabled"); 
-                $("#submitBtn .spinner").css("display", "inline-block");
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                $("#submitBtn").removeAttr("disabled");
-                $("#submitBtn .spinner").css("display", "none");
-                $('#popupCust .alert').removeClass('alert-success').addClass('alert-danger');
-                $('#popupCust .alert').html("Status Code: " + jqXHR.status + "\n" +
-                    "errorThrown: " + errorThrown + "\n" +
-                    "jqXHR.responseText: " + jqXHR.responseText + "\n");
-            },
-            success: function(data) {
-                $("#submitBtn .spinner").css("display", "none");
-                $("#submitBtn").removeAttr("disabled");
-                if (data.response == 'ok') {
-                    $('#popupCust .alert').removeClass('alert-danger').addClass('alert-success');
-                    $('#popupCust .alert').html(data.messages);
-                    $('#popupCust .alert').fadeOut('slow');
-                    //close popup modal here
-                    $('#popupCust').modal('hide');
+    // expire.setFullYear(now.getFullYear());
+    // expire.setMonth(now.getMonth());
+    // expire.setDate(now.getDate()+1);
+    // expire.setHours(0);
+    // expire.setMinutes(0);
+    // expire.setSeconds(0);
 
-                    //direct start game 
-                    start();
-                    started = true;
-                } else {
-                    $('#popupCust .alert').removeClass('alert-success').addClass('alert-danger');
-                    $('#popupCust .alert').html(data.messages);
-                }
-            }
+    // alert(expire);
 
-        });
-    }
+    // Cookies.set("racing_start_timer_popup_modal", true, { expires: 1 });
+    setCookie("racing_start_timer_popup_modal", true);
 
-    function submitFormRaceGame(){ // on submit
+    $("#popupCust").modal("show");
+  } else {
+    //direct start game
+    start();
+    started = true;
+  }
+}
 
-        // alert(formatTime(bestTime)); //default time : Infinity 
-        var formData = {
-            updateCustBestTime: true,
-            bestTime: formatTime(bestTime),
-            cookiePhoneNo: Cookies.get('racing_start_timer_phoneNo'),
-        };
+$(document).ready(function () {
+  //display game over msg in clickable area if cookie found
+  // var cookieSubmitted = Cookies.get("racing_start_timer_submitted_result");
+  let cookieSubmitted = getCookie("racing_start_timer_submitted_result");
 
-        if(formatTime(bestTime) != Infinity){
-            $.ajax({
-                type: 'POST',
-                url: "database/updateBestResult.php",
-                data: formData,
-                dataType: 'JSON',
-                beforeSend: function() {
-                    $("#confirmBtn").attr("disabled", "disabled"); 
-                    $("#confirmBtn .spinner").css("display", "inline-block");
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    $("#confirmBtn").removeAttr("disabled");
-                    $("#confirmBtn .spinner").css("display", "none");
-                    $("#popupConfirm .alert").removeClass('alert-success').addClass('alert-danger');
-                    $('#popupConfirm .alert').html("Status Code: " + jqXHR.status + "\n" +
-                        "errorThrown: " + errorThrown + "\n" +
-                        "jqXHR.responseText: " + jqXHR.responseText + "\n");
-                },
-                success: function(data) {
-                    $("#confirmBtn .spinner").css("display", "none");
-                    $("#confirmBtn").removeAttr("disabled");
-                    if (data.response == 'ok') {
-                        //set cookie here
-                        Cookies.set('racing_start_timer_submitted_result', true, {expires: 1});
-
-                        $("#popupConfirm .alert").removeClass('alert-danger').addClass('alert-success');
-                        $('#popupConfirm .alert').html(data.messages + "\n");
-
-                        location.reload();
-                    } else {
-    
-                        $("#popupConfirm .alert").removeClass('alert-success').addClass('alert-danger');
-                        $('#popupConfirm .alert').html(data.messages + "\n");
-    
-                    }
-                }
-    
-            });
-        }else{
-            $("#popupConfirm .alert").removeClass('alert-success').addClass('alert-danger');
-            $('#popupConfirm .alert').html('Please play at least 1 valid game before submit the result' + "\n");
-        }
-    }
-
-    //submitcust detail form 
-  $(document).ready(function () {
-    $("#form-popupCust").submit(function (event) {
-        submitFormPopUpCust();
-        event.preventDefault();
-    });
-  });
-
-  //submit best result 
-  $(document).ready(function () {
-    $("#submitResultBtn").mousedown(function (event) {
-        event.stopPropagation(); // to prevent click on the main container without intent and the game start immediately
-        //show confirm dialog here 
-        $("#popupConfirm").modal('show');
+  if (cookieSubmitted == "true") {
+    $("#clickable-area").replaceWith(
+      '<div class="text-center end-game-title">' +
+        "Game Over! You have submitted the best result!" +
+        "</div>"
         
-    });
+        // +
+        // '<div class="results">' +
+        // '<a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>' +
+        // "</div>"
+    );
+  }
+
+  //submit cust detail form
+  $("#form-popupCust").submit(function (event) {
+    event.preventDefault(); // disable default form submit
+    submitFormPopUpCust();
   });
 
-  //confirmbtn in confirm popup
-  $(document).ready(function () {
-    $("#confirmBtn").click(function () {
-        submitFormRaceGame();
-    });
+  //submit result 
+  $("#submitResultBtn").mousedown(function (event) {
+    event.stopPropagation(); // to prevent click on the main container without intent and the game start immediately
+    //show confirm dialog here
+    $("#popupConfirm").modal("show");
   });
 
-  //cancelbtn in confirm popup
-  $(document).ready(function () {
-    $("#cancelBtn").click(function () {
-        $('#popupConfirm').modal('hide');
-    });
+  //confirmbtn in submit result popup
+  $("#confirmBtn").click(function () {
+    submitFormRaceGame();
   });
 
-
-  $(document).ready(function () {
-
-    var cookieSubmitted = Cookies.get('racing_start_timer_submitted_result');
-    if(cookieSubmitted == 'true'){
-        $('#clickable-area').replaceWith('<div class="text-center end-game-title">' + 'Game Over! You have submitted the best result' + '</div>' +
-        '<div class="results">' + '<a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>' + '</div>');
-    }
+  //cancelbtn in submit result popup
+  $("#cancelBtn").click(function () {
+    $("#popupConfirm").modal("hide");
   });
 
-
-
-  $(document).ready(function() {  
-    if(document.location.pathname.matches(/your-page\.html/)) {
-          // do someting
-    }
 });
+
+
+// $(document).ready(function () {
+//   if (document.location.pathname.matches(/your-page\.html/)) {
+//     // do someting
+//   }
+// });
+
+//submit customer detail
+function submitFormPopUpCust() {
+  // on submit
+
+  const paramPhoneNo = $("#txtContact").val(); //get param phone no
+  // Cookies.set("racing_start_timer_phoneNo", paramPhoneNo, { expires: 1 }); //set phoneNo cookie for update finalresult
+  setCookie("racing_start_timer_phoneNo", paramPhoneNo);
+
+  const txtName = $("#txtName").val();
+  const txtEmail = $("#txtEmail").val();
+  const txtContact = $("#txtContact").val();
+
+  try {
+    socket.emit('save-cust-info', { name: txtName, email: txtEmail, contact: txtContact });
+    $("#popupCust .alert").removeClass("alert-danger").addClass("alert-success");
+    $("#popupCust .alert").html('Sucessfully save the information.');
+    $("#popupCust .alert").fadeOut("slow");
+    //close popup modal here
+    $("#popupCust").modal("hide");
+
+    // set cookie so that the customer popup wont show again
+    // Cookies.set("racing_start_timer_popup_modal", true, { expires: 1 });
+    setCookie("racing_start_timer_popup_modal", true);
+    //direct start game
+    start();
+    started = true;
+
+  } catch (e) {
+    $("#popupCust .alert").removeClass("alert-success").addClass("alert-danger");
+    $("#popupCust .alert").html("Something went wrong. Unable to save the information.");
+    return;
+  }
+}
+
+//submit best result
+function submitFormRaceGame() {
+  const finalBestTime = formatTime(bestTime);
+
+  // const cookiePhoneNo = Cookies.get("racing_start_timer_phoneNo");
+  let cookiePhoneNo = getCookie("racing_start_timer_phoneNo");
+
+  if (finalBestTime != Infinity) {  // get best time means got both of info ady
+    try {
+      //set cookie here
+      // Cookies.set("racing_start_timer_submitted_result", true, {expires: 1});
+      setCookie("racing_start_timer_submitted_result", true);
+            
+      socket.emit("save-best-result", { cookiePhoneNo: cookiePhoneNo, finalBestTime: finalBestTime});
+      $("#popupConfirm .alert").removeClass("alert-danger").addClass("alert-success");
+      $("#popupConfirm .alert").html('Sucessfully submit the best result.');
+      $("#popupConfirm").modal('hide');
+      $("#clickable-area").replaceWith(
+        '<div class="text-center end-game-title">' +
+          "Game Over! You have submitted the best result!" +
+          "</div>"
+          
+          // +
+          // '<div class="results">' +
+          // '<a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>' +
+          // "</div>"
+      );
+
+      // location.reload();
+
+    } catch (e) {
+      $("#popupConfirm .alert").removeClass("alert-success").addClass("alert-danger");
+      $("#popupConfirm .alert").html("Something went wrong. Unable to save the best result.");
+      return;
+    }
+  }else{
+    $("#popupConfirm .alert").removeClass("alert-success").addClass("alert-danger");
+    $("#popupConfirm .alert").html('Please play at least 1 valid game before submiting the result.');
+  }
+}
+//phone masking
+                                                                  
+$(document).ready(function(){
+  $('#txtContact').mask('000-00000000');
+});
+
+
+//javascript cookie
+
+function setCookie(cname, cvalue) {
+
+  //expire will be set to end of the day 
+  var now = new Date();
+  var expire = new Date();
+
+  expire.setFullYear(now.getFullYear());
+  expire.setMonth(now.getMonth());
+  expire.setDate(now.getDate()+1);
+  expire.setHours(0);
+  expire.setMinutes(0);
+  expire.setSeconds(0);
+
+  var expires = "expires="+expire.toString();
+  // alert(expires + "=> now =" + now);
+
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+
+
 
