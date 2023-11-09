@@ -1,6 +1,6 @@
 2. 
 
-host the app online , 
+host the app online , (in cfmoto)
 test phone can start game?
 check css
 

@@ -3,19 +3,20 @@ choong qna
 summary:
 
 important: 
+-- cookie problem -- done 
+-- dont need set end time / start time of the game -- done 
+-- same person is restricted to play on the same day, enother day is ok -- done 
+-- dont need display live ranking button to user -- done 
+-- add export result fucntion and reset the table  -- done? 
 
- -- validate phone num  -- skip 
-
- -- separate the result pageout  and create 1 login page --- not imp 
-
-
- important thing to warn choong --------- -:
-
-
- ---- got some dalay after clear data 
+-- validate phone num  -- skip 
+-- separate the result pageout  and create 1 login page --- not imp 
 
 
-----  1day can only play 1 match 
+=====================================================
+  important thing to warn choong :
+1. got some dalay after clear data 
+2. 1day can only play 1 match 
 
 
 
