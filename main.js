@@ -253,13 +253,12 @@ $(document).ready(function () {
 function submitFormPopUpCust() {
   // on submit
 
-  const paramPhoneNo = $("#txtContact").val(); //get param phone no
-  // Cookies.set("racing_start_timer_phoneNo", paramPhoneNo, { expires: 1 }); //set phoneNo cookie for update finalresult
-  setCookie("racing_start_timer_phoneNo", paramPhoneNo);
-
   const txtName = $("#txtName").val();
   const txtEmail = $("#txtEmail").val();
   const txtContact = $("#txtContact").val();
+
+  setCookie("racing_start_timer_phoneNo", txtContact);  // to be save again with bestresult 
+  setCookie("racing_start_timer_name", txtName);  // to be save again with bestresult 
 
   try {
     socket.emit('save-cust-info', { name: txtName, email: txtEmail, contact: txtContact });
@@ -287,8 +286,8 @@ function submitFormPopUpCust() {
 function submitFormRaceGame() {
   const finalBestTime = formatTime(bestTime);
 
-  // const cookiePhoneNo = Cookies.get("racing_start_timer_phoneNo");
   let cookiePhoneNo = getCookie("racing_start_timer_phoneNo");
+  let cookieName = getCookie("racing_start_timer_name");
 
   if (finalBestTime != Infinity) {  // get best time means got both of info ady
     try {
@@ -296,7 +295,7 @@ function submitFormRaceGame() {
       // Cookies.set("racing_start_timer_submitted_result", true, {expires: 1});
       setCookie("racing_start_timer_submitted_result", true);
             
-      socket.emit("save-best-result", { cookiePhoneNo: cookiePhoneNo, finalBestTime: finalBestTime});
+      socket.emit("save-best-result", { cookiePhoneNo: cookiePhoneNo, cookieName: cookieName , finalBestTime: finalBestTime});
       $("#popupConfirm .alert").removeClass("alert-danger").addClass("alert-success");
       $("#popupConfirm .alert").html('Sucessfully submit the best result.');
       $("#popupConfirm").modal('hide');

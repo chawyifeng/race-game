@@ -2,11 +2,11 @@ const socket = io();
 
 // A $( document ).ready() block.
 $(document).ready(function () {
-  socket.emit("pull-db-result", { boolean: true });
+  // socket.emit("pull-db-result", { boolean: true });
 
   socket.on("retrieve-db-result", (usersArr) => {
     // console.log(usersArr); //already get the data 
-
+  
     resetBoard(usersArr);
   });
 });
@@ -30,4 +30,5 @@ function resetBoard(usersArr) {
   // updateRanks(usersArr); // dont need will be done ont database
   // reposition(usersArr);
 }
+
 
