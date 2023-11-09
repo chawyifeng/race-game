@@ -8,6 +8,8 @@ import { fileURLToPath } from "url";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { CronJob } from 'cron';
+import session from "express-session";
+
 
 import excelJS from 'exceljs'
 // import { excelJS } from 'exceljs';
@@ -65,6 +67,15 @@ const __filename = fileURLToPath(import.meta.url); // fix __dirname cant use in 
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Use sessions to track logged-in state
+app.use(session({
+  secret: 'mforce-bike',
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
 app.use(express.static(path.join(__dirname, "/"))); //serve all the file in the project directory
 
 const server = createServer(app);
@@ -77,74 +88,71 @@ app.get("/", (req, res) => {
   res.sendFile("index.html", { root: "." });
 });
 
-app.get("ranking/", (req, res) => {
-  res.sendFile(__dirname + "./ranking/index.html");
-});
 
 //download excel function
 app.post("/downloadExcel", async (req, res) => { //change from get to post
-   // WRITE DOWNLOAD EXCEL LOGIC
-   const workbook = new excelJS.Workbook();  // Create a new workbook
-   const worksheet = workbook.addWorksheet("Final Result"); // New Worksheet
-   const downloadPath = "./excel";  // Path to download excel
-   const filename = `ranking_${date}${month}${year}_${hours}${minutes}${seconds}.xlsx`;
-   const fullFileName = path.join(downloadPath, filename);
- 
-   // //set header of the workbook , the key column must match with add row function 
-   worksheet.columns = [
-     { header: "Rank", key: "rank", width: 10 },
-     { header: "Name", key: "name", width: 10 },
-     { header: "Best Time", key: "bestTime", width: 10 },
-   ];
- 
-   //get userdata function
-   let UsersArr = [];
-    UsersArr = await getUserData();
- 
-    //  Looping through User data
-    let counter = 1;
-    UsersArr.forEach((user) => {
-      worksheet.addRow({ rank: counter, name: user.name, bestTime: user.bestTime });
-      counter++;
-    });
- 
-   // Making first line in excel bold
-   worksheet.getRow(1).eachCell((cell) => {
-     cell.font = { bold: true };
-   });
+  // WRITE DOWNLOAD EXCEL LOGIC
+  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const worksheet = workbook.addWorksheet("Final Result"); // New Worksheet
+  const downloadPath = "./excel";  // Path to download excel
+  const filename = `ranking_${date}${month}${year}_${hours}${minutes}${seconds}.xlsx`;
+  const fullFileName = path.join(downloadPath, filename);
 
-   try {
-     const data = await workbook.xlsx.writeFile(fullFileName)
-       .then(() => {
+  // //set header of the workbook , the key column must match with add row function 
+  worksheet.columns = [
+    { header: "Rank", key: "rank", width: 10 },
+    { header: "Name", key: "name", width: 10 },
+    { header: "Best Time", key: "bestTime", width: 10 },
+  ];
+
+  //get userdata function
+  let UsersArr = [];
+  UsersArr = await getUserData();
+
+  //  Looping through User data
+  let counter = 1;
+  UsersArr.forEach((user) => {
+    worksheet.addRow({ rank: counter, name: user.name, bestTime: user.bestTime });
+    counter++;
+  });
+
+  // Making first line in excel bold
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+  });
+
+  try {
+    const data = await workbook.xlsx.writeFile(fullFileName)
+      .then(() => {
         //  res.send({
         //    status: "success",
         //    message: "file successfully downloaded",
         //    path: `${downloadPath}/users.xlsx`,
         //  });
         res.sendFile(filename, { root: 'excel' });
-       });
-   } catch (err) {
+      });
+  } catch (err) {
     console.log(err);
-     res.send({
-       status: "error",
-       message: "Something went wrong",
-     });
-   }
+    res.send({
+      status: "error",
+      message: "Something went wrong",
+    });
+  }
 
-   ///////////////////////////////////////////////////////////////////////
-    //                            CLEAR DATA IN DB 
-   ///////////////////////////////////////////////////////////////////////
-   let result;
-   try {
-      //remove the data in database
-      result = await db.run("DELETE FROM tbl_ranking");
-      console.log("successfully delete the ranking from the table"); //broadcast the result to everyone
-    } catch (e) {
-      // TODO handle the failure
-      console.log(e);
-      console.log("Something went wrong in the process of delete the ranking");
-      return;
-    }
+  ///////////////////////////////////////////////////////////////////////
+  //                            CLEAR DATA IN DB 
+  ///////////////////////////////////////////////////////////////////////
+  let result;
+  try {
+    //remove the data in database
+    result = await db.run("DELETE FROM tbl_ranking");
+    console.log("successfully delete the ranking from the table"); //broadcast the result to everyone
+  } catch (e) {
+    // TODO handle the failure
+    console.log(e);
+    console.log("Something went wrong in the process of delete the ranking");
+    return;
+  }
 });
 
 server.listen(3000, () => {
@@ -232,5 +240,61 @@ const getUserData = async () => {
   // console.log('localUsersArr:', localUsersArr);
   return localUsersArr;
 };
+
+//login
+//default login credential 
+const users = [
+  { username: 'admin', password: 'admin' },
+];
+
+// get login page 
+app.get("/login", (req, res) => {
+  res.sendFile(__dirname + "/login/index.html");
+});
+
+
+// get login form data 
+app.post('/login', (req, res) => {
+
+  let isAuthenticated = false;
+
+  const { username, password } = req.body;
+
+  //loop through evry user to check is valid admin login credntial 
+  for (const user of users) {
+    if (user.username === username && user.password === password) {
+      isAuthenticated = true;
+      break;
+    }
+  }
+
+  if (isAuthenticated) {
+    // Set session variable to indicate user is logged in
+    req.session.isLoggedIn = true;
+    res.redirect('/ranking');
+  } else {
+    res.json({ success: false, message: 'Invalid username or password.' });
+  }
+});
+
+// Admin route with middleware to check if the user is logged in
+const checkLoggedIn = (req, res, next) => {
+  console.log('req.session.isLoggedIn: ' + req.session.isLoggedIn);
+
+  if (req.session.isLoggedIn) {
+    next();
+    console.log('access');
+  } else {
+    res.status(403).send('Permission denied. Please login.');
+    console.log('not able to access');
+  }
+};
+
+//check log in first before redirect to ranking page 
+app.get("/ranking", checkLoggedIn, (req, res) => {
+  console.log('req.session.isLoggedIn: ' + req.session.isLoggedIn);
+  res.sendFile(__dirname + "./ranking/index.html");
+});
+
 
 
