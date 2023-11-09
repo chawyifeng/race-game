@@ -3,75 +3,123 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Racing Start Timer - Admin Login</title>
-    <link
-      rel="icon"
-      sizes="600x600"
-      href="https://cdn.glitch.com/e0396011-48ac-44c9-bf55-6e11b025757d%2Fflag.png?1500283332796"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
-      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-      crossorigin="anonymous"
-    />
-    <style>
-      #mylink {
-        font-size: 25px;
-      }
-    </style>
+    <title>Admin Login Page</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="main.css">
   </head>
+  <body>
+    <div class="limiter">
+      <div class="container-login100">
+        <div class="wrap-login100">
+          <form id="loginForm" class="login100-form validate-form">
+            <span class="login100-form-title p-b-26"> Welcome </span>
 
-  <body align="center">
-    <header>
-      <h1>Login</h1>
-    </header>
+            <!--image here-->
+            <div class="form-group">
+                <center><img class="img-logo pt-3 pb-3" src="../assets/cfmoto_logo_black.png"></center>
+            </div>
 
-    <form id="loginForm" action="/login" method="POST">
-      <fieldset>
-        <label>Username</label>
-        <input type="text" id="uname" name="uname" required />
-        <br /><br />
+            <div
+              class="wrap-input100 validate-input"
+            >
+              <input id="uname" name="uname" class="input100" type="text"  />
+              <span class="focus-input100" data-placeholder="Username"></span>
+            </div>
 
-        <label>Password</label>
-        <input type="password" id="password" name="password" required />
-        <div id="messageContainer"></div>
-        <br /><br />
+            <div
+              class="wrap-input100 validate-input"
+            >
+              <span class="btn-show-pass">
+                <i class="zmdi zmdi-eye"></i>
+              </span>
+              <input id="password" name="password" class="input100" type="password" />
+              <span class="focus-input100" data-placeholder="Password"></span>
+            </div>
 
-        <button type="submit">Submit</button>
-      </fieldset>
-    </form>
-  </body>
+            <div id="messageContainer"></div>
 
-  <script>
-    // Script to display error messages
-    const form = document.getElementById("loginForm");
-    const messageContainer = document.getElementById("messageContainer");
+            <div class="container-login100-form-btn">
+              <div class="wrap-login100-form-btn">
+                <div class="login100-form-bgbtn"></div>
+                <button class="login100-form-btn">Login</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+      (function ($) {
+        "use strict";
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+        /*==================================================================
+    [ Focus input ]*/
+        $(".input100").each(function () {
+          $(this).on("blur", function () {
+            if ($(this).val().trim() != "") {
+              $(this).addClass("has-val");
+            } else {
+              $(this).removeClass("has-val");
+            }
+          });
+        });
 
-      const username = document.querySelector("#uname").value;
-      const password = document.querySelector("#password").value;
+        /*==================================================================
+    [ Show pass ]*/
+        var showPass = 0;
+        $(".btn-show-pass").on("click", function () {
+          if (showPass == 0) {
+            $(this).next("input").attr("type", "text");
+            $(this).find("i").removeClass("zmdi-eye");
+            $(this).find("i").addClass("zmdi-eye-off");
+            showPass = 1;
+          } else {
+            $(this).next("input").attr("type", "password");
+            $(this).find("i").addClass("zmdi-eye");
+            $(this).find("i").removeClass("zmdi-eye-off");
+            showPass = 0;
+          }
+        });
+      })(jQuery);
+    </script>
 
-      const response = await fetch("/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+    <script>
+      // Script to display error messages
+      const form = document.getElementById("loginForm");
+      const messageContainer = document.getElementById("messageContainer");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const username = document.querySelector("#uname").value;
+        const password = document.querySelector("#password").value;
+
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          window.location.href = result.redirect; // Redirect on success
+        } else {
+          messageContainer.textContent = result.message;
+        }
       });
-
-      const result = await response.json();
-
-      if (result.success) {
-        window.location.href = result.redirect; // Redirect on success
-      } else {
-        messageContainer.textContent = result.message;
-      }
-    });
-  </script>
+    </script>
+  </body>
 </html>

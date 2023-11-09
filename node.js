@@ -68,13 +68,6 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Use sessions to track logged-in state
-app.use(session({
-  secret: 'mforce-bike',
-  resave: true,
-  saveUninitialized: true
-}));
-
 app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
 app.use(express.static(path.join(__dirname, "/"))); //serve all the file in the project directory
 
@@ -241,60 +234,73 @@ const getUserData = async () => {
   return localUsersArr;
 };
 
+
+
 //login
 //default login credential 
-const users = [
-  { username: 'admin', password: 'admin' },
-];
+// SQLite database setup
+const db_login = new sqlite3.Database('user_login.db');
+app.use(
+  session({
+    secret: 'your-secret-key', // Replace with a secret key for session management
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+// Middleware to check if the user is authenticated
+function authenticateUser(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+}
 
-// get login page 
 app.get("/login", (req, res) => {
   res.sendFile(__dirname + "/login/index.html");
 });
 
-
-// get login form data 
+// Login route
 app.post('/login', (req, res) => {
-
-  let isAuthenticated = false;
-
   const { username, password } = req.body;
 
-  //loop through evry user to check is valid admin login credntial 
-  for (const user of users) {
-    if (user.username === username && user.password === password) {
-      isAuthenticated = true;
-      break;
+  // Your authentication logic
+  db_login.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Server error.' });
     }
-  }
 
-  if (isAuthenticated) {
-    // Set session variable to indicate user is logged in
-    req.session.isLoggedIn = true;
-    res.redirect('/ranking');
-  } else {
-    res.json({ success: false, message: 'Invalid username or password.' });
-  }
+    // Check if the user was found in the database
+    if (row) {
+      // Store user information in the session
+      req.session.user = row;
+      return res.json({ success: true, redirect: '/ranking' });
+    } else {
+      return res.json({ success: false, message: 'Invalid username or password.' });
+    }
+  });
 });
 
-// Admin route with middleware to check if the user is logged in
-const checkLoggedIn = (req, res, next) => {
-  console.log('req.session.isLoggedIn: ' + req.session.isLoggedIn);
-
-  if (req.session.isLoggedIn) {
-    next();
-    console.log('access');
-  } else {
-    res.status(403).send('Permission denied. Please login.');
-    console.log('not able to access');
-  }
-};
-
-//check log in first before redirect to ranking page 
-app.get("/ranking", checkLoggedIn, (req, res) => {
-  console.log('req.session.isLoggedIn: ' + req.session.isLoggedIn);
-  res.sendFile(__dirname + "./ranking/index.html");
+// Serve the /ranking page only if the user is authenticated
+app.get('/ranking', authenticateUser, (req, res) => {
+  // User is authenticated, serve the content
+  res.sendFile(__dirname + '/ranking/index.html');
 });
 
+// Check authentication status
+app.get('/checkAuthentication', (req, res) => {
+  const isAuthenticated = !!req.session.user; // Check if user is in the session
+  res.json({ authenticated: isAuthenticated });
+});
 
-
+// Close the database connection when the server is stopped
+process.on('SIGINT', () => {
+  db_login.close((err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Closed the database connection.');
+    process.exit();
+  });
+});

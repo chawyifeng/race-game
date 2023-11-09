@@ -1,3 +1,21 @@
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if the user is authenticated
+  fetch('/checkAuthentication') // A new route to check authentication status
+    .then(response => response.json())
+    .then(data => {
+      if (data.authenticated) {
+        // User is authenticated, show the content
+        document.getElementById('main-container').style.display = 'block';
+      } else {
+        // User is not authenticated, redirect to login
+        window.location.href = '/login';
+      }
+    })
+    .catch(error => {
+      console.error('Error checking authentication status:', error);
+    });
+});
+
 const socket = io();
 
 // A $( document ).ready() block.
