@@ -12,8 +12,9 @@ let lightsOutTime = 0;
 let raf;
 let timeout;
 let timeStamp;
-const socket = io();
-// const socket = io.connect('http://localhost:3000/');
+
+const baseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
+const socket = io.connect(baseUrl);
 
 function formatTime(time) {
   time = Math.round(time);

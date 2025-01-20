@@ -101,7 +101,8 @@
         const username = document.querySelector("#uname").value;
         const password = document.querySelector("#password").value;
 
-        const response = await fetch("/login", {
+        const baseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
+        const response = await fetch(`${baseUrl}/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
