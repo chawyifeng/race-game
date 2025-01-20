@@ -1,6 +1,7 @@
 //config file for server, usign
 
 import express from "express";
+import cors from 'cors';
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import path from "path";
@@ -68,6 +69,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Use CORS middleware
+
+app.use(cors());
 app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
 app.use(express.static(path.join(__dirname, "/"))); //serve all the file in the project directory
 
@@ -275,7 +279,7 @@ app.post('/login', (req, res) => {
     if (row) {
       // Store user information in the session
       req.session.user = row;
-      return res.json({ success: true, redirect: '/ranking' });
+      return res.json({ success: true, redirect: '/racing-start-timer/ranking' });
     } else {
       return res.json({ success: false, message: 'Invalid username or password.' });
     }
