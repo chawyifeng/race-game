@@ -1,3 +1,5 @@
+/// original author code to cache the game so that the game is playable when user is offline 
+// not useful ady 
 const cacheName = 'static-v5';
 
 addEventListener('install', event => {
