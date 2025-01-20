@@ -1,20 +1,27 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if the user is authenticated
-  fetch('/checkAuthentication') // A new route to check authentication status
-    .then(response => response.json())
-    .then(data => {
-      if (data.authenticated) {
-        // User is authenticated, show the content
-        document.getElementById('main-container').style.display = 'block';
-      } else {
-        // User is not authenticated, redirect to login
-        window.location.href = '/login';
-      }
-    })
-    .catch(error => {
-      console.error('Error checking authentication status:', error);
-    });
-});
+// document.addEventListener('DOMContentLoaded', () => {
+
+//   // Check if the user is authenticated
+//   const baseUrlWithPort3000 = `${window.location.protocol}//${window.location.hostname}:3000`;
+//   const baseUrlWithDefaultPort = `${window.location.protocol}//${window.location.hostname}`;
+
+//   fetch(`${baseUrlWithPort3000}/checkAuthentication`) // A new route to check authentication status
+//     .then(response => response.json()) //convert into json 
+//     .then(data => {
+
+//       console.log(data.authenticated);
+
+//       if (data.authenticated) {
+//         // User is authenticated, show the content
+//         document.getElementById('main-container').style.display = 'block';
+//       } else {
+//         // User is not authenticated, redirect to login
+//        // window.location.href = `${baseUrlWithDefaultPort}/racing-start-timer/login`;
+//       }
+//     })
+//     .catch(error => {
+//       console.log('Error checking authentication status:', error);
+//     });
+// });
 
 const socket = io();
 

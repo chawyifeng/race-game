@@ -1,3 +1,4 @@
+//***** current problem -- no use routing to protect the file, so no choice frontnend there have tp check again */
 //config file for server, usign
 
 import express from "express";
@@ -292,11 +293,12 @@ app.get('/ranking', authenticateUser, (req, res) => {
   res.sendFile(__dirname + '/ranking/index.html');
 });
 
-// Check authentication status
-app.get('/checkAuthentication', (req, res) => {
-  const isAuthenticated = !!req.session.user; // Check if user is in the session
-  res.json({ authenticated: isAuthenticated });
-});
+// Check authentication status // when access ranking page
+// app.get('/checkAuthentication', (req, res) => {
+//   const isAuthenticated = !!req.session.user; // Check if user is in the session
+//   console.log('isAuthenticated: ' + isAuthenticated);
+//   res.json({ authenticated: isAuthenticated });
+// });
 
 // Close the database connection when the server is stopped
 process.on('SIGINT', () => {
