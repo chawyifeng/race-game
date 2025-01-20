@@ -23,7 +23,8 @@
 //     });
 // });
 
-const socket = io();
+const baseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
+const socket = io.connect(baseUrl);
 
 // A $( document ).ready() block.
 $(document).ready(function () {
