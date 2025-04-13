@@ -177,14 +177,6 @@ function tap(event) {
 })();
 
 /**
- * check if support service worker, if support register sw.js
- */
-if (navigator.serviceWorker) {
-  // check if support service worker
-  navigator.serviceWorker.register("sw.js");
-}
-
-/**
  * check cookie to see a person register ady or not
  * if not yet, popup a modal for him to register
  * if register ady, direct play game
