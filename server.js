@@ -1,52 +1,40 @@
-//***** current problem -- no use routing to protect the file, so no choice frontnend there have tp check again */
-//config file for server, usign
+//***** current problem -- SERVE ALL THE FILE so no choice frontnend there have tp check again */
+// IMPORTANT : IF THIS VERSION NOT WORKING REVERT BACK TO THE PREVIOUS GIT 
 
 import express from "express";
-import cors from 'cors';
+import cors from "cors";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-import { CronJob } from 'cron';
+import { CronJob } from "cron";
 import session from "express-session";
+import excelJS from "exceljs";
 
-
-import excelJS from 'exceljs'
-// import { excelJS } from 'exceljs';
-
-///database
-
-// open the database file
-// new Date object
 let date_ob = new Date();
-
 // current date
-// adjust 0 before single digit date
-let date = ("0" + date_ob.getDate()).slice(-2);
-
+let date = ("0" + date_ob.getDate()).slice(-2); // make it have 0 before the digit if only have single digit
 // current month
-let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
-
+let month = ("0" + (date_ob.getMonth() + 1)).slice(-2); // make it have 0 before the digit if only have single digit
 // current year
 let year = date_ob.getFullYear();
-
 // current hours
 let hours = date_ob.getHours();
-
 // current minutes
 let minutes = date_ob.getMinutes();
-
 // current seconds
 let seconds = date_ob.getSeconds();
 
+/**
+ * init the db
+ */
 const db = await open({
   filename: "user_" + date + month + year + ".db",
   driver: sqlite3.Database,
 });
 
-// create our 'messages' table (you can ignore the 'client_offset' column for now)
 await db.exec(`
   CREATE TABLE IF NOT EXISTS tbl_user(
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -63,45 +51,60 @@ await db.exec(`
   );
 `);
 
-/////server config
-
+/**
+ * server config
+ */
 const __filename = fileURLToPath(import.meta.url); // fix __dirname cant use in es6 issue
 const __dirname = path.dirname(__filename);
-
 const app = express();
 
-// Use CORS middleware
-
+/**
+ * Use CORS middleware
+ */
 app.use(cors());
 app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
 app.use(express.static(path.join(__dirname, "/"))); //serve all the file in the project directory
 
 const server = createServer(app);
-// const io = new Server(server, {
-//   path: "/racing-start-timer/"
-// });
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost"
-  }
+    origin: "http://localhost",
+  },
 });
 
+/**
+ * SERVE ALL THE FILE
+ */
 app.get("/", (req, res) => {
   res.sendFile("index.html", { root: "." });
 });
 
+app.get("/login", (req, res) => {
+  res.sendFile(__dirname + "/login/index.html");
+});
 
-//download excel function
-app.post("/downloadExcel", async (req, res) => { //change from get to post
+/**
+ * Serve the /ranking page only if the user is authenticated
+ */
+app.get("/ranking", authenticateUser, (req, res) => {
+  // User is authenticated, serve the content
+  res.sendFile(__dirname + "/ranking/index.html");
+});
+
+/**
+ * download excel function
+ */
+app.post("/downloadExcel", async (req, res) => {
+  //change from get to post
   // WRITE DOWNLOAD EXCEL LOGIC
-  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const workbook = new excelJS.Workbook(); // Create a new workbook
   const worksheet = workbook.addWorksheet("Final Result"); // New Worksheet
-  const downloadPath = "./excel";  // Path to download excel
+  const downloadPath = "./excel"; // Path to download excel
   const filename = `ranking_${date}${month}${year}_${hours}${minutes}${seconds}.xlsx`;
   const fullFileName = path.join(downloadPath, filename);
 
-  // //set header of the workbook , the key column must match with add row function 
+  // //set header of the workbook , the key column must match with add row function
   worksheet.columns = [
     { header: "Rank", key: "rank", width: 10 },
     { header: "Name", key: "name", width: 10 },
@@ -110,12 +113,16 @@ app.post("/downloadExcel", async (req, res) => { //change from get to post
 
   //get userdata function
   let UsersArr = [];
-  UsersArr = await getUserData();
+  UsersArr = await getUserData(); //get user data from db
 
   //  Looping through User data
   let counter = 1;
   UsersArr.forEach((user) => {
-    worksheet.addRow({ rank: counter, name: user.name, bestTime: user.bestTime });
+    worksheet.addRow({
+      rank: counter,
+      name: user.name,
+      bestTime: user.bestTime,
+    });
     counter++;
   });
 
@@ -125,15 +132,14 @@ app.post("/downloadExcel", async (req, res) => { //change from get to post
   });
 
   try {
-    const data = await workbook.xlsx.writeFile(fullFileName)
-      .then(() => {
-        //  res.send({
-        //    status: "success",
-        //    message: "file successfully downloaded",
-        //    path: `${downloadPath}/users.xlsx`,
-        //  });
-        res.sendFile(filename, { root: 'excel' });
-      });
+    const data = await workbook.xlsx.writeFile(fullFileName).then(() => {
+      //  res.send({
+      //    status: "success",
+      //    message: "file successfully downloaded",
+      //    path: `${downloadPath}/users.xlsx`,
+      //  });
+      res.sendFile(filename, { root: "excel" });
+    });
   } catch (err) {
     console.log(err);
     res.send({
@@ -143,7 +149,7 @@ app.post("/downloadExcel", async (req, res) => { //change from get to post
   }
 
   ///////////////////////////////////////////////////////////////////////
-  //                            CLEAR DATA IN DB 
+  //                            CLEAR DATA IN DB
   ///////////////////////////////////////////////////////////////////////
   let result;
   try {
@@ -158,76 +164,122 @@ app.post("/downloadExcel", async (req, res) => { //change from get to post
   }
 });
 
+/**
+ * POST LOGIN ROUTE
+ */
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Your authentication logic
+  db_login.get(
+    "SELECT * FROM users WHERE username = ? AND password = ?",
+    [username, password],
+    (err, row) => {
+      if (err) {
+        console.error(err);
+        return res
+          .status(500)
+          .json({ success: false, message: "Server error." });
+      }
+
+      // Check if the user was found in the database
+      if (row) {
+        // Store user information in the session
+        req.session.user = row;
+        return res.json({
+          success: true,
+          redirect: "/racing-start-timer/ranking",
+        });
+      } else {
+        return res.json({
+          success: false,
+          message: "Invalid username or password.",
+        });
+      }
+    }
+  );
+});
+
 server.listen(3000, () => {
   console.log("server running at http://localhost:3000/");
 });
 
 io.on("connection", async (socket) => {
   console.log("a user connected");
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
 
-  socket.on("save-best-result", async ({ cookiePhoneNo, cookieName, finalBestTime }) => {
+  /**
+   * save best result
+   */
+  socket.on(
+    "save-best-result",
+    async ({ cookiePhoneNo, cookieName, finalBestTime }) => {
+      let result;
+      try {
+        // store the message in the database
+        result = await db.run(
+          "INSERT INTO tbl_ranking (contactNo,name,bestTime) VALUES (?,?,?)",
+          cookiePhoneNo,
+          cookieName,
+          finalBestTime
+        );
+
+        console.log("successfully save the best result"); //broadcast the result to everyone
+      } catch (e) {
+        // TODO handle the failure
+        console.log("Something went wrong in the process of save best result");
+        return;
+      }
+    }
+  );
+
+  /**
+   * save-cust-info
+   */
+  socket.on("save-cust-info", async ({ name, email, contact }) => {
     let result;
     try {
       // store the message in the database
       result = await db.run(
-        "INSERT INTO tbl_ranking (contactNo,name,bestTime) VALUES (?,?,?)",
-        cookiePhoneNo,
-        cookieName,
-        finalBestTime
+        "INSERT INTO tbl_user (name,email,contactNo) VALUES (?,?,?)",
+        name,
+        email,
+        contact
       );
-
-      console.log("successfully save the best result"); //broadcast the result to everyone
+      console.log("success insert into db");
     } catch (e) {
       // TODO handle the failure
-      console.log("Something went wrong in the process of save best result");
+      console.log(e);
+      console.log("Something went wrong in the process of save cust info");
       return;
     }
   });
 
-  // socket.on("save-cust-info", async ({ name, email, contact }) => {
-  //   let result;
-  //   try {
-  //     // store the message in the database
-  //     result = await db.run(
-  //       "INSERT INTO tbl_user (name,email,contactNo) VALUES (?,?,?)",
-  //       name,
-  //       email,
-  //       contact,
-  //     );
-  //     console.log("success insert into db");
-  //   } catch (e) {
-  //     // TODO handle the failure
-  //     console.log(e);
-  //     console.log("Something went wrong in the process of save cust info");
-  //     return;
-  //   }
-  // });
-
+  /**
+   * retreieve db result
+   */
   const job = new CronJob(
-    '* * * * * *', // cronTime
+    "* * * * * *", // cronTime
     async function () {
       let UsersArr = [];
       UsersArr = await getUserData();
       // console.log('test: ' + UsersArr);
-      socket.emit('retrieve-db-result', UsersArr);
+      socket.emit("retrieve-db-result", UsersArr);
     }, // onTick
     null, // onComplete
     true, // start
-    'Asia/Kuala_Lumpur' // timeZone
+    "Asia/Kuala_Lumpur" // timeZone
   );
-
 });
 
-
-// Define your database query or function to run on the cron schedule
+/**
+ * get user data from db
+ * @returns
+ */
 const getUserData = async () => {
   let localUsersArr = [];
   let sql = `SELECT * FROM tbl_ranking WHERE bestTime != "" ORDER BY bestTime ASC LIMIT 10`;
   try {
-    //GET THE DATA FROM DB 
+    //GET THE DATA FROM DB
     await db.each(sql, (err, row) => {
       if (err) {
         throw err;
@@ -238,80 +290,35 @@ const getUserData = async () => {
       localUsersArr.push(user);
     });
   } catch (error) {
-    console.error('Error executing database query:', error);
+    console.error("Error executing database query:", error);
   }
   // console.log('localUsersArr:', localUsersArr);
   return localUsersArr;
 };
 
-
-
-//login
-//default login credential 
-// SQLite database setup
-const db_login = new sqlite3.Database('user_login.db');
-app.use(
-  session({
-    secret: 'your-secret-key', // Replace with a secret key for session management
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-// Middleware to check if the user is authenticated
+/**
+ * HELPER FUNCTION TO CHECK IF A USER IS AUTHENTICATED IN RANKING MODULE/ADMIN MODULE
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 function authenticateUser(req, res, next) {
   if (req.session.user) {
     next();
   } else {
-    res.redirect('/login');
+    res.redirect("/login");
   }
 }
 
-app.get("/login", (req, res) => {
-  res.sendFile(__dirname + "/login/index.html");
-});
-
-// Login route
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-
-  // Your authentication logic
-  db_login.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, row) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ success: false, message: 'Server error.' });
-    }
-
-    // Check if the user was found in the database
-    if (row) {
-      // Store user information in the session
-      req.session.user = row;
-      return res.json({ success: true, redirect: '/racing-start-timer/ranking' });
-    } else {
-      return res.json({ success: false, message: 'Invalid username or password.' });
-    }
-  });
-});
-
-// Serve the /ranking page only if the user is authenticated
-app.get('/ranking', authenticateUser, (req, res) => {
-  // User is authenticated, serve the content
-  res.sendFile(__dirname + '/ranking/index.html');
-});
-
-// Check authentication status // when access ranking page
-// app.get('/checkAuthentication', (req, res) => {
-//   const isAuthenticated = !!req.session.user; // Check if user is in the session
-//   console.log('isAuthenticated: ' + isAuthenticated);
-//   res.json({ authenticated: isAuthenticated });
-// });
-
-// Close the database connection when the server is stopped
-process.on('SIGINT', () => {
+/**
+ * Close the database connection when the server is stopped
+ */
+process.on("SIGINT", () => {
   db_login.close((err) => {
     if (err) {
       return console.error(err.message);
     }
-    console.log('Closed the database connection.');
+    console.log("Closed the database connection.");
     process.exit();
   });
 });
