@@ -331,25 +331,24 @@ $(document).ready(function(){
 
 
 //javascript cookie
-
+/**
+ * tmr 00:00 end 
+ * @param {*} cname 
+ * @param {*} cvalue 
+ */
 function setCookie(cname, cvalue) {
-
-  //expire will be set to end of the day 
   var now = new Date();
-  var expire = new Date();
+  var expire = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1, // Midnight of the next day
+    0, 0, 0 // 00:00:00
+  );
 
-  expire.setFullYear(now.getFullYear());
-  expire.setMonth(now.getMonth());
-  expire.setDate(now.getDate()+1);
-  expire.setHours(0);
-  expire.setMinutes(0);
-  expire.setSeconds(0);
-
-  var expires = "expires="+expire.toString();
-  // alert(expires + "=> now =" + now);
-
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  var expires = "expires=" + expire.toUTCString(); // Better format for cookies
+  document.cookie = cname + "=" + encodeURIComponent(cvalue) + ";" + expires + ";path=/";
 }
+
 
 function getCookie(cname) {
   let name = cname + "=";
