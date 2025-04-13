@@ -16,6 +16,9 @@ let timeStamp;
 const baseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
 const socket = io.connect(baseUrl);
 
+/**
+ * format output time
+ */
 function formatTime(time) {
   time = Math.round(time);
   let outputTime = time / 1000;
@@ -28,36 +31,52 @@ function formatTime(time) {
   return outputTime;
 }
 
+/**
+ * display best time
+ */
 if (bestTime != Infinity) {
   best.textContent = formatTime(bestTime);
 
   //insert best time into database here
 }
 
+/**
+ * start game (CORE GAME FUNCTION)
+ */
 function start() {
+  // 1. Resetting the UI
   for (const light of lights) {
     light.classList.remove("on");
   }
 
   time.textContent = "00.000";
   time.classList.remove("anim");
+  // 1. Resetting the UI
 
+  // 2. Initializing game Variables
   lightsOutTime = 0;
   let lightsOn = 0;
   const lightsStart = performance.now(); //returns a high resolution timestamp in milliseconds
+  // 2. Initializing game Variables
 
   function frame(now) {
-    const toLight = Math.floor((now - lightsStart) / 1000) + 1;
+
+    //3. Animating the Lights (1 per second)
+    const toLight = Math.floor((now - lightsStart) / 1000) + 1; // + 1 to make the light light first when 1.5sec for example
 
     if (toLight > lightsOn) {
       for (const light of lights.slice(0, toLight)) {
         light.classList.add("on");
       }
     }
+    //3. Animating the Lights (1 per second)
 
-    if (toLight < 5) {
+    //4. Continue or End the Countdown
+    if (toLight < 5) { 
+      // condition not yet light all 5 light
       raf = requestAnimationFrame(frame);
     } else {
+      // condition after all 5 light is on: add some random delay and turn off the light and record user reaction time
       const delay = Math.random() * 4000 + 1000;
       timeout = setTimeout(() => {
         for (const light of lights) {
@@ -66,11 +85,15 @@ function start() {
         lightsOutTime = performance.now();
       }, delay);
     }
+    //4. Continue or End the Countdown
   }
 
   raf = requestAnimationFrame(frame);
 }
 
+/**
+ * end game
+ */
 function end(timeStamp) {
   cancelAnimationFrame(raf);
   clearTimeout(timeout);
@@ -95,6 +118,11 @@ function end(timeStamp) {
   }
 }
 
+/**
+ * tap function 
+ * @param {*} event 
+ * @returns 
+ */
 function tap(event) {
   if (
     !started &&
@@ -110,88 +138,62 @@ function tap(event) {
     end(performance.now());
     started = false;
   } else {
-    //start game
+    //fake start game, it just display a popup
     startGame();
   }
 }
 
-//tap on light only
-const clickableArea = document.querySelector(".clickable-area");
+/**
+ * instantly run function to enable tap listener
+ */
+(function enableTapListeners() {
+  const clickableArea = document.querySelector(".clickable-area");
 
-clickableArea.addEventListener("touchstart", tap, {
-  passive: false,
-}); //for mobile
+  // Mobile (touch)
+  clickableArea.addEventListener("touchstart", tap, { passive: false });
 
-clickableArea.addEventListener(
-  "mousedown",
-  (event) => {
-    if (event.button === 0){
-      tap(event); //left click
-    } 
-  },
-  {
-    passive: false,
-  }
-);
+  // Mouse (left click only)
+  clickableArea.addEventListener(
+    "mousedown",
+    (event) => {
+      if (event.button === 0) {
+        tap(event);
+      }
+    },
+    { passive: false }
+  );
 
-clickableArea.addEventListener(
-  "keydown",
-  (event) => {
-    if (event.key == " ") tap(event); //space?
-  },
-  {
-    passive: false,
-  }
-);
+  // Keyboard (spacebar)
+  clickableArea.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === " ") {
+        tap(event);
+      }
+    },
+    { passive: false }
+  );
 
-// addEventListener('touchstart', tap, {
-//     passive: false
-// }); //for mobile
+})();
 
-// addEventListener('mousedown', event => {
-//     if (event.button === 0) tap(event); //left click
-// }, {
-//     passive: false
-// });
-
-// addEventListener('keydown', event => {
-//     if (event.key == ' ') tap(event); //space?
-// }, {
-//     passive: false
-// });
-
+/**
+ * check if support service worker, if support register sw.js
+ */
 if (navigator.serviceWorker) {
   // check if support service worker
   navigator.serviceWorker.register("sw.js");
 }
 
-//=======================================================================
-// core game function
-//=======================================================================
-
-//show popup modal
+/**
+ * check cookie to see a person register ady or not
+ * if not yet, popup a modal for him to register
+ * if register ady, direct play game
+ */
 function startGame() {
   let x = document.cookie;
-
-  // var CustPopupModal = Cookies.get("racing_start_timer_popup_modal");
   let CustPopupModal = getCookie("racing_start_timer_popup_modal");
-
   if (CustPopupModal != "true") {
-    // var now = new Date();
-    // var expire = new Date();
-
-    // expire.setFullYear(now.getFullYear());
-    // expire.setMonth(now.getMonth());
-    // expire.setDate(now.getDate()+1);
-    // expire.setHours(0);
-    // expire.setMinutes(0);
-    // expire.setSeconds(0);
-
-    // alert(expire);
-
-    // Cookies.set("racing_start_timer_popup_modal", true, { expires: 1 });
     setCookie("racing_start_timer_popup_modal", true);
-
     $("#popupCust").modal("show");
   } else {
     //direct start game
@@ -200,9 +202,11 @@ function startGame() {
   }
 }
 
-$(document).ready(function () {
-  //display game over msg in clickable area if cookie found
-  // var cookieSubmitted = Cookies.get("racing_start_timer_submitted_result");
+
+/**
+ * validate a user submit result or not
+ */
+function validateUserSubmitResult(){
   let cookieSubmitted = getCookie("racing_start_timer_submitted_result");
 
   if (cookieSubmitted == "true") {
@@ -210,13 +214,20 @@ $(document).ready(function () {
       '<div class="text-center end-game-title">' +
         "Game Over! You have submitted the best result!" +
         "</div>"
-        
-        // +
-        // '<div class="results">' +
-        // '<a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>' +
-        // "</div>"
+
+      // +
+      // '<div class="results">' +
+      // '<a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>' +
+      // "</div>"
     );
   }
+}
+
+/**
+ * document ready -- bind event
+ */
+$(document).ready(function () {
+  validateUserSubmitResult();
 
   //submit cust detail form
   $("#form-popupCust").submit(function (event) {
@@ -224,7 +235,7 @@ $(document).ready(function () {
     submitFormPopUpCust();
   });
 
-  //submit result 
+  //submit result
   $("#submitResultBtn").mousedown(function (event) {
     event.stopPropagation(); // to prevent click on the main container without intent and the game start immediately
     //show confirm dialog here
@@ -241,14 +252,8 @@ $(document).ready(function () {
     $("#popupConfirm").modal("hide");
   });
 
+  $("#txtContact").mask("000-00000000");
 });
-
-
-// $(document).ready(function () {
-//   if (document.location.pathname.matches(/your-page\.html/)) {
-//     // do someting
-//   }
-// });
 
 //submit customer detail
 function submitFormPopUpCust() {
@@ -258,13 +263,19 @@ function submitFormPopUpCust() {
   const txtEmail = $("#txtEmail").val();
   const txtContact = $("#txtContact").val();
 
-  setCookie("racing_start_timer_phoneNo", txtContact);  // to be save again with bestresult 
-  setCookie("racing_start_timer_name", txtName);  // to be save again with bestresult 
+  setCookie("racing_start_timer_phoneNo", txtContact); // to be save again with bestresult
+  setCookie("racing_start_timer_name", txtName); // to be save again with bestresult
 
   try {
-    socket.emit('save-cust-info', { name: txtName, email: txtEmail, contact: txtContact });
-    $("#popupCust .alert").removeClass("alert-danger").addClass("alert-success");
-    $("#popupCust .alert").html('Sucessfully save the information.');
+    socket.emit("save-cust-info", {
+      name: txtName,
+      email: txtEmail,
+      contact: txtContact,
+    });
+    $("#popupCust .alert")
+      .removeClass("alert-danger")
+      .addClass("alert-success");
+    $("#popupCust .alert").html("Sucessfully save the information.");
     $("#popupCust .alert").fadeOut("slow");
     //close popup modal here
     $("#popupCust").modal("hide");
@@ -275,10 +286,13 @@ function submitFormPopUpCust() {
     //direct start game
     start();
     started = true;
-
   } catch (e) {
-    $("#popupCust .alert").removeClass("alert-success").addClass("alert-danger");
-    $("#popupCust .alert").html("Something went wrong. Unable to save the information.");
+    $("#popupCust .alert")
+      .removeClass("alert-success")
+      .addClass("alert-danger");
+    $("#popupCust .alert").html(
+      "Something went wrong. Unable to save the information."
+    );
     return;
   }
 }
@@ -290,51 +304,58 @@ function submitFormRaceGame() {
   let cookiePhoneNo = getCookie("racing_start_timer_phoneNo");
   let cookieName = getCookie("racing_start_timer_name");
 
-  if (finalBestTime != Infinity) {  // get best time means got both of info ady
+  if (finalBestTime != Infinity) {
+    // get best time means got both of info ady
     try {
       //set cookie here
       // Cookies.set("racing_start_timer_submitted_result", true, {expires: 1});
       setCookie("racing_start_timer_submitted_result", true);
-            
-      socket.emit("save-best-result", { cookiePhoneNo: cookiePhoneNo, cookieName: cookieName , finalBestTime: finalBestTime});
-      $("#popupConfirm .alert").removeClass("alert-danger").addClass("alert-success");
-      $("#popupConfirm .alert").html('Sucessfully submit the best result.');
-      $("#popupConfirm").modal('hide');
+
+      socket.emit("save-best-result", {
+        cookiePhoneNo: cookiePhoneNo,
+        cookieName: cookieName,
+        finalBestTime: finalBestTime,
+      });
+      $("#popupConfirm .alert")
+        .removeClass("alert-danger")
+        .addClass("alert-success");
+      $("#popupConfirm .alert").html("Sucessfully submit the best result.");
+      $("#popupConfirm").modal("hide");
       $("#clickable-area").replaceWith(
         '<div class="text-center end-game-title">' +
           "Game Over! You have submitted the best result!" +
           "</div>"
-          
-          // +
-          // '<div class="results">' +
-          // '<a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>' +
-          // "</div>"
+
+        // +
+        // '<div class="results">' +
+        // '<a id="liveRankingBtn" class="btn btn-secondary ml-3" href="ranking/">Live Ranking</a>' +
+        // "</div>"
       );
 
       // location.reload();
-
     } catch (e) {
-      $("#popupConfirm .alert").removeClass("alert-success").addClass("alert-danger");
-      $("#popupConfirm .alert").html("Something went wrong. Unable to save the best result.");
+      $("#popupConfirm .alert")
+        .removeClass("alert-success")
+        .addClass("alert-danger");
+      $("#popupConfirm .alert").html(
+        "Something went wrong. Unable to save the best result."
+      );
       return;
     }
-  }else{
-    $("#popupConfirm .alert").removeClass("alert-success").addClass("alert-danger");
-    $("#popupConfirm .alert").html('Please play at least 1 valid game before submiting the result.');
+  } else {
+    $("#popupConfirm .alert")
+      .removeClass("alert-success")
+      .addClass("alert-danger");
+    $("#popupConfirm .alert").html(
+      "Please play at least 1 valid game before submiting the result."
+    );
   }
 }
-//phone masking
-                                                                  
-$(document).ready(function(){
-  $('#txtContact').mask('000-00000000');
-});
 
-
-//javascript cookie
 /**
- * tmr 00:00 end 
- * @param {*} cname 
- * @param {*} cvalue 
+ * javascript cookie function, tmr 00:00 end
+ * @param {*} cname
+ * @param {*} cvalue
  */
 function setCookie(cname, cvalue) {
   var now = new Date();
@@ -342,21 +363,23 @@ function setCookie(cname, cvalue) {
     now.getFullYear(),
     now.getMonth(),
     now.getDate() + 1, // Midnight of the next day
-    0, 0, 0 // 00:00:00
+    0,
+    0,
+    0 // 00:00:00
   );
 
   var expires = "expires=" + expire.toUTCString(); // Better format for cookies
-  document.cookie = cname + "=" + encodeURIComponent(cvalue) + ";" + expires + ";path=/";
+  document.cookie =
+    cname + "=" + encodeURIComponent(cvalue) + ";" + expires + ";path=/";
 }
-
 
 function getCookie(cname) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
+  let ca = decodedCookie.split(";");
+  for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
-    while (c.charAt(0) == ' ') {
+    while (c.charAt(0) == " ") {
       c = c.substring(1);
     }
     if (c.indexOf(name) == 0) {
@@ -365,7 +388,3 @@ function getCookie(cname) {
   }
   return "";
 }
-
-
-
-
