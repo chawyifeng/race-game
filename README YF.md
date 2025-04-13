@@ -29,12 +29,12 @@ npm install exceljs
 2. CHANGE ORIGIN FOR SOCKET IO
 3. RUN SERVER.JS
 
-## PENDING TASK 
+## PENDING TASK / TO DO
 ### YEAR 2025
 1. change to mysql or redis or firebase (SEARCH HOW TO ADD MYSQL INTO NODE.JS)
 2. put those static file into public folder
 3. CHECK ALL URL/ENDPOINT
-
+4. BECAUSE MAKE EVERYTHIGN ACCESSIBLE --- SO DONT NEED RUN SERVER.JS ALREADY HAVE SOMETHING CAN WORK -- SHOULD PUT IN PUBLIC
 
 ### YEAR 2023
 1. host the app online , (in cfmoto)
