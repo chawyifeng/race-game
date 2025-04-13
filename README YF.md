@@ -28,6 +28,7 @@ npm install exceljs
 1. RUN NPM INSTALL
 2. CHANGE ORIGIN FOR SOCKET IO
 3. RUN SERVER.JS
+<pre> node server.js </pre>
 
 ## PENDING TASK / TO DO
 ### YEAR 2025
