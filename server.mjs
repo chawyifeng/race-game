@@ -1,5 +1,5 @@
 //***** current problem -- SERVE ALL THE FILE so no choice frontnend there have tp check again */
-// IMPORTANT : IF THIS VERSION NOT WORKING REVERT BACK TO THE PREVIOUS GIT 
+// IMPORTANT : IF THIS VERSION NOT WORKING REVERT BACK TO THE PREVIOUS GIT
 
 import express from "express";
 import cors from "cors";
@@ -52,10 +52,10 @@ await db.exec(`
 `);
 
 /**
- * server config
+ * server config (Required for __dirname and __filename to work in ES modules)
  */
-const __filename = fileURLToPath(import.meta.url); // fix __dirname cant use in es6 issue
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url); // Convert import.meta.url to a file path
+const __dirname = path.dirname(__filename); // Get the directory name of the current module
 const app = express();
 
 /**
@@ -63,7 +63,7 @@ const app = express();
  */
 app.use(cors());
 app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
-app.use(express.static(path.join(__dirname, "/"))); //serve all the file in the project directory
+app.use(express.static(path.join(__dirname, "public"))); // Serve only the "public" folder
 
 const server = createServer(app);
 
@@ -76,20 +76,21 @@ const io = new Server(server, {
 /**
  * SERVE ALL THE FILE
  */
-app.get("/", (req, res) => {
-  res.sendFile("index.html", { root: "." });
-});
 
-app.get("/login", (req, res) => {
-  res.sendFile(__dirname + "/login/index.html");
-});
+// seems like dont need this one
+// app.get("/", (req, res) => {
+//   res.sendFile("index.html", { root: path.join(__dirname, "public/") });
+// });
+
+// app.get("/login", (req, res) => {
+//   res.sendFile("index.html", { root: path.join(__dirname, "public/login") });
+// });
 
 /**
  * Serve the /ranking page only if the user is authenticated
  */
 app.get("/ranking", authenticateUser, (req, res) => {
-  // User is authenticated, serve the content
-  res.sendFile(__dirname + "/ranking/index.html");
+  res.sendFile("index.html", { root: path.join(__dirname, "public/ranking") });
 });
 
 /**
@@ -188,7 +189,7 @@ app.post("/login", (req, res) => {
         req.session.user = row;
         return res.json({
           success: true,
-          redirect: "/racing-start-timer/ranking",
+          redirect: "../ranking", // Go one folder above before redirecting to /ranking
         });
       } else {
         return res.json({
