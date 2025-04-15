@@ -42,6 +42,7 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 4. BECAUSE MAKE EVERYTHIGN ACCESSIBLE --- SO DONT NEED RUN SERVER.JS ALREADY HAVE SOMETHING CAN WORK -- SHOULD PUT IN PUBLIC
 5. http://localhost/racing-start-timer-compare/ranking/ -- user able to direct go this page
 6. ReferenceError: db_login is not defined -- line 174
+7. http://localhost:3000/ -- dont expose port 3000
 
 ### YEAR 2023
 
