@@ -41,7 +41,7 @@ npm install exceljs
 8. ReferenceError: db_login is not defined -- line 174 
 
 ### YEAR 2023
-1. host the app online , (in cfmoto)
+1. host the app online 
 2. test phone can start game?
 3. check css
 
