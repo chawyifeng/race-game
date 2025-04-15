@@ -21,12 +21,6 @@ main.js --- front end core game function
 server.js --- backend server main script
 ranking page --- redirect to login page when not authenticated -- still got problem
 
-\*\*\* need install:
-
-1. npm install cors
-2. npm install express-session
-3. npm install exceljs
-
 ## DEPLOYMENT
 
 1. RUN NPM INSTALL
