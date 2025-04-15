@@ -1,4 +1,4 @@
-# RACING START TIMER
+# RACING START TIMER (this project is all complete except do checking and complete to do below)
 
 This is a simple Markdown file.
 
@@ -27,8 +27,9 @@ npm install exceljs
 ## DEPLOYMENT 
 1. RUN NPM INSTALL
 2. CHANGE ORIGIN FOR SOCKET IO
-3. RUN SERVER.JS
+3. RUN SERVER.JS 
 <pre> node server.js </pre>
+4. when deploy in shared hosting with node.js module -- need change fixed port 3000
 
 ## PENDING TASK / TO DO
 ### YEAR 2025
@@ -36,6 +37,8 @@ npm install exceljs
 2. put those static file into public folder
 3. CHECK ALL URL/ENDPOINT
 4. BECAUSE MAKE EVERYTHIGN ACCESSIBLE --- SO DONT NEED RUN SERVER.JS ALREADY HAVE SOMETHING CAN WORK -- SHOULD PUT IN PUBLIC
+5. http://localhost/racing-start-timer-compare/ranking/ -- user able to direct go this page
+8. ReferenceError: db_login is not defined -- line 174 
 
 ### YEAR 2023
 1. host the app online , (in cfmoto)
