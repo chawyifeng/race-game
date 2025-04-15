@@ -59,6 +59,17 @@ const __dirname = path.dirname(__filename); // Get the directory name of the cur
 const app = express();
 
 /**
+ * INIT SESSION
+ */
+app.use(
+  session({
+    secret: "your_secret_key", // Secret for signing session cookies
+    resave: false, // Don't resave session if it wasn't modified (For most applications, there is no need to resave the session unless the session data has been changed)
+    saveUninitialized: true, // Save uninitialized sessions
+  })
+);
+
+/**
  * Use CORS middleware
  */
 app.use(cors());
@@ -85,6 +96,20 @@ const io = new Server(server, {
 // app.get("/login", (req, res) => {
 //   res.sendFile("index.html", { root: path.join(__dirname, "public/login") });
 // });
+
+/**
+ * HELPER FUNCTION TO CHECK IF A USER IS AUTHENTICATED IN RANKING MODULE/ADMIN MODULE
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+function authenticateUser(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    res.redirect("/login");
+  }
+}
 
 /**
  * Serve the /ranking page only if the user is authenticated
@@ -296,20 +321,6 @@ const getUserData = async () => {
   // console.log('localUsersArr:', localUsersArr);
   return localUsersArr;
 };
-
-/**
- * HELPER FUNCTION TO CHECK IF A USER IS AUTHENTICATED IN RANKING MODULE/ADMIN MODULE
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-function authenticateUser(req, res, next) {
-  if (req.session.user) {
-    next();
-  } else {
-    res.redirect("/login");
-  }
-}
 
 /**
  * Close the database connection when the server is stopped
