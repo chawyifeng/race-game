@@ -39,6 +39,8 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 
 ### YEAR 2025
 
+\*\*\* done change to use public folder -- need checking
+
 0. create a endpoint to serve excel file, excel file dont put in public folder
 1. change to mysql or redis or firebase (SEARCH HOW TO ADD MYSQL INTO NODE.JS)
 2. put those static file into public folder
