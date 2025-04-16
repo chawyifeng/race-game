@@ -13,7 +13,7 @@ let raf;
 let timeout;
 let timeStamp;
 
-const socket = io.connect(baseUrl);
+const socket = io.connect();
 
 /**
  * format output time
