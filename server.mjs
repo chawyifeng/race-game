@@ -56,7 +56,8 @@ await db.exec(`
  */
 const __filename = fileURLToPath(import.meta.url); // Convert import.meta.url to a file path
 const __dirname = path.dirname(__filename); // Get the directory name of the current module
-const app = express();
+const app = express(); // express instance
+const PORT = process.env.PORT || 3000; // Use the environment variable PORT, default to 3000 if not set
 
 /**
  * INIT SESSION
@@ -76,7 +77,7 @@ app.use(cors());
 app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
 app.use(express.static(path.join(__dirname, "public"))); // Serve only the "public" folder
 
-const server = createServer(app);
+const server = createServer(app); // Create the http server
 
 const io = new Server(server, {
   cors: {
@@ -104,6 +105,7 @@ const io = new Server(server, {
  * @param {*} next
  */
 function authenticateUser(req, res, next) {
+  console.log(req.session); // Check session data
   if (req.session.user) {
     next();
   } else {
@@ -212,6 +214,7 @@ app.post("/login", (req, res) => {
       if (row) {
         // Store user information in the session
         req.session.user = row;
+        console.log(req.session.user); // Check session data
         return res.json({
           success: true,
           redirect: "../ranking", // Go one folder above before redirecting to /ranking
@@ -226,8 +229,8 @@ app.post("/login", (req, res) => {
   );
 });
 
-server.listen(3000, () => {
-  console.log("server running at http://localhost:3000/");
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
 });
 
 io.on("connection", async (socket) => {
