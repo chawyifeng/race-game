@@ -35,14 +35,15 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 
 \*\*\* done change to use public folder -- need checking
 
-0. create a endpoint to serve excel file, excel file dont put in public folder
-1. change to mysql or redis or firebase (SEARCH HOW TO ADD MYSQL INTO NODE.JS)
-2. put those static file into public folder
-3. CHECK ALL URL/ENDPOINT
-4. BECAUSE MAKE EVERYTHIGN ACCESSIBLE --- SO DONT NEED RUN SERVER.JS ALREADY HAVE SOMETHING CAN WORK -- SHOULD PUT IN PUBLIC
-5. http://localhost/racing-start-timer-compare/ranking/ -- user able to direct go this page
-6. ReferenceError: db_login is not defined -- line 174
-7. http://localhost:3000/ -- dont expose port 3000
+2. change to mysql or redis or firebase (SEARCH HOW TO ADD MYSQL INTO NODE.JS)
+3. not working yet for protected route /ranking --- related to session/db
+4. create a endpoint to serve excel file, excel file dont put in public folder
+5. put those static file into public folder
+6. CHECK ALL URL/ENDPOINT
+7. BECAUSE MAKE EVERYTHIGN ACCESSIBLE --- SO DONT NEED RUN SERVER.JS ALREADY HAVE SOMETHING CAN WORK -- SHOULD PUT IN PUBLIC
+8. http://localhost/racing-start-timer-compare/ranking/ -- user able to direct go this page
+9. ReferenceError: db_login is not defined -- line 174
+10. http://localhost:3000/ -- dont expose port 3000
 
 ### YEAR 2023
 
