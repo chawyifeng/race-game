@@ -121,22 +121,34 @@ function end(timeStamp) {
  * @param {*} event
  * @returns
  */
+let lastTapTime = 0;
+const throttleInterval = 300; // Set the throttle interval (in milliseconds)
+
 function tap(event) {
-  if (
-    !started &&
-    event.target &&
-    event.target.closest &&
-    event.target.closest("a")
-  )
+  const now = performance.now();
+
+  // If the time since the last tap is less than the throttle interval, return early
+  if (now - lastTapTime < throttleInterval) {
     return;
+  }
+
+  // if is submitResultBtn, return
+  if (event.target.id === "submitResultBtn") {
+    return;
+  }
+
+  // Update the last tap time
+  lastTapTime = now;
+
+  // Normal logic starts here
   event.preventDefault();
 
   if (started) {
-    //end game
-    end(performance.now());
+    // End the game
+    end(now);
     started = false;
   } else {
-    //fake start game, it just display a popup
+    // Fake start game, it just displays a popup
     startGame();
   }
 }
