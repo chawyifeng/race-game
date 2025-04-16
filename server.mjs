@@ -57,7 +57,7 @@ await db.exec(`
 const __filename = fileURLToPath(import.meta.url); // Convert import.meta.url to a file path
 const __dirname = path.dirname(__filename); // Get the directory name of the current module
 const app = express(); // express instance
-const PORT = process.env.PORT || 3000; // Use the environment variable PORT, default to 3000 if not set
+const PORT = process.env.PORT || 3000; // Use the environment variable PORT (SO THAT CAN BE USED ON SHARED HOSTING), default to 3000 if not set
 
 /**
  * INIT SESSION
