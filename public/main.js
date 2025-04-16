@@ -148,7 +148,7 @@ function tap(event) {
   const clickableArea = document.querySelector(".clickable-area");
 
   // Mobile (touch)
-  clickableArea.addEventListener("touchstart", tap, { passive: false });
+  clickableArea.addEventListener("touchstart", tap, { passive: false }); // telling the browser that you might call event.preventDefault().
 
   // Mouse (left click only)
   clickableArea.addEventListener(
@@ -158,7 +158,7 @@ function tap(event) {
         tap(event);
       }
     },
-    { passive: false }
+    { passive: false } //telling the browser that you might call event.preventDefault().
   );
 
   // Keyboard (spacebar)
@@ -169,7 +169,7 @@ function tap(event) {
         tap(event);
       }
     },
-    { passive: false }
+    { passive: false } //telling the browser that you might call event.preventDefault().
   );
 })();
 
