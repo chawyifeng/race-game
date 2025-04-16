@@ -82,7 +82,7 @@ const startServer = async () => {
 
   const io = new Server(server, {
     cors: {
-      origin: "https://race.cfmotomalaysia.com.my/",
+      origin: "http://localhost/",
     },
   });
 
