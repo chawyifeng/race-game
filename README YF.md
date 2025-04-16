@@ -43,6 +43,7 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 7. BECAUSE MAKE EVERYTHIGN ACCESSIBLE --- SO DONT NEED RUN SERVER.JS ALREADY HAVE SOMETHING CAN WORK -- SHOULD PUT IN PUBLIC \*\*\* done?
 8. ReferenceError: db_login is not defined -- line 174 \*\*\* IMPORTANT
 9. http://localhost:3000/ -- dont expose port 3000
+10. animation for ranking page
 
 ### YEAR 2023
 
