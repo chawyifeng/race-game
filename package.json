@@ -1,17 +1,16 @@
 {
-    "name": "racing-start-timer",
-    "version": "0.0.1",
-    "description": "my first socket.io app",
-    "type": "module",
-    "dependencies": {
-        "cors": "^2.8.5",
-        "cron": "^3.1.6",
-        "exceljs": "^4.4.0",
-        "express": "^4.21.2",
-        "express-session": "^1.18.1",
-        "expressjs": "^1.0.1",
-        "socket.io": "^4.7.2",
-        "sqlite": "^5.1.1",
-        "sqlite3": "^5.1.6"
-    }
+  "name": "racing-start-timer",
+  "version": "0.0.1",
+  "description": "my first socket.io app",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "cron": "^3.1.6",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "expressjs": "^1.0.1",
+    "socket.io": "^4.7.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.6"
+  }
 }
