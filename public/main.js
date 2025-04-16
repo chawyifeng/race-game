@@ -13,7 +13,6 @@ let raf;
 let timeout;
 let timeStamp;
 
-const baseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
 const socket = io.connect(baseUrl);
 
 /**
@@ -60,7 +59,6 @@ function start() {
   // 2. Initializing game Variables
 
   function frame(now) {
-
     //3. Animating the Lights (1 per second)
     const toLight = Math.floor((now - lightsStart) / 1000) + 1; // + 1 to make the light light first when 1.5sec for example
 
@@ -72,7 +70,7 @@ function start() {
     //3. Animating the Lights (1 per second)
 
     //4. Continue or End the Countdown
-    if (toLight < 5) { 
+    if (toLight < 5) {
       // condition not yet light all 5 light
       raf = requestAnimationFrame(frame);
     } else {
@@ -119,9 +117,9 @@ function end(timeStamp) {
 }
 
 /**
- * tap function 
- * @param {*} event 
- * @returns 
+ * tap function
+ * @param {*} event
+ * @returns
  */
 function tap(event) {
   if (
@@ -173,7 +171,6 @@ function tap(event) {
     },
     { passive: false }
   );
-
 })();
 
 /**
@@ -194,11 +191,10 @@ function startGame() {
   }
 }
 
-
 /**
  * validate a user submit result or not
  */
-function validateUserSubmitResult(){
+function validateUserSubmitResult() {
   let cookieSubmitted = getCookie("racing_start_timer_submitted_result");
 
   if (cookieSubmitted == "true") {

@@ -5,7 +5,7 @@
 //   const baseUrlWithDefaultPort = `${window.location.protocol}//${window.location.hostname}`;
 
 //   fetch(`${baseUrlWithPort3000}/checkAuthentication`) // A new route to check authentication status
-//     .then(response => response.json()) //convert into json 
+//     .then(response => response.json()) //convert into json
 //     .then(data => {
 
 //       console.log(data.authenticated);
@@ -23,16 +23,15 @@
 //     });
 // });
 
-const baseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
-const socket = io.connect(baseUrl);
+const socket = io.connect();
 
 // A $( document ).ready() block.
 $(document).ready(function () {
   // socket.emit("pull-db-result", { boolean: true });
 
   socket.on("retrieve-db-result", (usersArr) => {
-    // console.log(usersArr); //already get the data 
-  
+    // console.log(usersArr); //already get the data
+
     resetBoard(usersArr);
   });
 });
@@ -44,17 +43,21 @@ function resetBoard(usersArr) {
   for (let i = 0; i < usersArr.length; i++) {
     const user = $(
       "<tr>" +
-        "<td class='rank'><b>" + (i + 1) + "</b></td>" +
-        "<td class=''><b>" + usersArr[i].name + "</b></td>" +
-        "<td class=''><b>" + usersArr[i].bestTime + "</b></td>" +
-      "</tr>"
+        "<td class='rank'><b>" +
+        (i + 1) +
+        "</b></td>" +
+        "<td class=''><b>" +
+        usersArr[i].name +
+        "</b></td>" +
+        "<td class=''><b>" +
+        usersArr[i].bestTime +
+        "</b></td>" +
+        "</tr>"
     );
-    tbody.append(user); //display out 
+    tbody.append(user); //display out
   }
 
   // usersArr.sort(ascending); // dont need will be done ont database
   // updateRanks(usersArr); // dont need will be done ont database
   // reposition(usersArr);
 }
-
-
