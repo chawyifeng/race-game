@@ -1,56 +1,122 @@
 //***** current problem -- SERVE ALL THE FILE so no choice frontnend there have tp check again */
 // IMPORTANT : IF THIS VERSION NOT WORKING REVERT BACK TO THE PREVIOUS GIT
 
+require("dotenv").config(); // This will load environment variables from the .env file
+
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const { fileURLToPath } = require("url");
-const sqlite3 = require("sqlite3");
-const { open } = require("sqlite");
+const mysql = require("mysql2");
 const { CronJob } = require("cron");
 const session = require("express-session");
 const excelJS = require("exceljs");
 
 let date_ob = new Date();
-// current date
-let date = ("0" + date_ob.getDate()).slice(-2); // make it have 0 before the digit if only have single digit
-// current month
-let month = ("0" + (date_ob.getMonth() + 1)).slice(-2); // make it have 0 before the digit if only have single digit
-// current year
+let date = ("0" + date_ob.getDate()).slice(-2);
+let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
 let year = date_ob.getFullYear();
-// current hours
 let hours = date_ob.getHours();
-// current minutes
 let minutes = date_ob.getMinutes();
-// current seconds
 let seconds = date_ob.getSeconds();
 
 const startServer = async () => {
-  /**
-   * init the db
-   */
-  const db = await open({
-    filename: "user_" + date + month + year + ".db",
-    driver: sqlite3.Database,
+  // **Set up MySQL connection**
+  const db = mysql.createPool({
+    host: process.env.DB_HOST, // Using environment variable for host
+    user: process.env.DB_USER, // Using environment variable for user
+    password: process.env.DB_PASSWORD, // Using environment variable for password
+    database: process.env.DB_NAME, // Using environment variable for database
+    waitForConnections: true, // If the pool runs out of connections, it will wait for one to be released
+    connectionLimit: 10, // Max number of connections allowed in the pool
+    queueLimit: 0, // No limit for waiting queries in the queue
   });
 
-  await db.exec(`
-  CREATE TABLE IF NOT EXISTS tbl_user(
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    name varchar(255) NOT NULL,
-    email varchar(255) NOT NULL,
-    contactNo varchar(255) NOT NULL UNIQUE
-  );
+  const createTables = () => {
+    // **Create 'events' table**
+    db.query(
+      `
+      CREATE TABLE IF NOT EXISTS events (
+        event_id INT AUTO_INCREMENT PRIMARY KEY,
+        event_name VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+      (err, result) => {
+        if (err) {
+          console.error("Error creating events table:", err);
+        } else {
+          console.log("Events table created or already exists");
+        }
+      }
+    );
 
-  CREATE TABLE IF NOT EXISTS tbl_ranking(
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    contactNo varchar(255) NOT NULL UNIQUE,
-    name varchar(255) NOT NULL,
-    bestTime varchar(255) NOT NULL
-  );
-`);
+    // **Create 'event_days' table**
+    db.query(
+      `
+      CREATE TABLE IF NOT EXISTS event_days (
+        event_day_id INT AUTO_INCREMENT PRIMARY KEY,
+        event_id INT NOT NULL,
+        event_date DATE NOT NULL,
+        FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
+      );
+    `,
+      (err, result) => {
+        if (err) {
+          console.error("Error creating event_days table:", err);
+        } else {
+          console.log("Event_days table created or already exists");
+        }
+      }
+    );
+
+    // **Create 'customers' table**
+    db.query(
+      `
+      CREATE TABLE IF NOT EXISTS customers (
+        customer_id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        contactNo VARCHAR(255) NOT NULL UNIQUE,
+        event_day_id INT NOT NULL,
+        game_result VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (event_day_id) REFERENCES event_days(event_day_id) ON DELETE CASCADE
+      );
+    `,
+      (err, result) => {
+        if (err) {
+          console.error("Error creating customers table:", err);
+        } else {
+          console.log("Customers table created or already exists");
+        }
+      }
+    );
+
+    // **Create 'admins' table**
+    db.query(
+      `
+      CREATE TABLE IF NOT EXISTS admins (
+        admin_id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+      (err, result) => {
+        if (err) {
+          console.error("Error creating admins table:", err);
+        } else {
+          console.log("Admins table created or already exists");
+        }
+      }
+    );
+  };
+
+  // Execute the function to create tables
+  createTables();
 
   /**
    * server config (Required for __dirname and __filename to work in ES modules)
@@ -106,7 +172,6 @@ const startServer = async () => {
    * @param {*} next
    */
   function authenticateUser(req, res, next) {
-    console.log(req.session); // Check session data
     if (req.session.user) {
       next();
     } else {
@@ -142,9 +207,7 @@ const startServer = async () => {
       { header: "Best Time", key: "bestTime", width: 10 },
     ];
 
-    //get userdata function
-    let UsersArr = [];
-    UsersArr = await getUserData(); //get user data from db
+    let UsersArr = await getUserData(db); // get user data from MySQL
 
     //  Looping through User data
     let counter = 1;
@@ -163,49 +226,22 @@ const startServer = async () => {
     });
 
     try {
-      const data = await workbook.xlsx.writeFile(fullFileName).then(() => {
-        //  res.send({
-        //    status: "success",
-        //    message: "file successfully downloaded",
-        //    path: `${downloadPath}/users.xlsx`,
-        //  });
-        res.sendFile(filename, { root: "excel" });
-      });
+      await workbook.xlsx.writeFile(fullFileName);
+      res.sendFile(filename, { root: "excel" });
     } catch (err) {
       console.log(err);
-      res.send({
-        status: "error",
-        message: "Something went wrong",
-      });
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-    //                            CLEAR DATA IN DB
-    ///////////////////////////////////////////////////////////////////////
-    let result;
-    try {
-      //remove the data in database
-      result = await db.run("DELETE FROM tbl_ranking");
-      console.log("successfully delete the ranking from the table"); //broadcast the result to everyone
-    } catch (e) {
-      // TODO handle the failure
-      console.log(e);
-      console.log("Something went wrong in the process of delete the ranking");
-      return;
+      res.send({ status: "error", message: "Something went wrong" });
     }
   });
 
-  /**
-   * POST LOGIN ROUTE
-   */
+  // POST Login route
   app.post("/login", (req, res) => {
     const { username, password } = req.body;
 
-    // Your authentication logic
-    db_login.get(
-      "SELECT * FROM users WHERE username = ? AND password = ?",
+    db.query(
+      "SELECT * FROM admins WHERE username = ? AND password = ?",
       [username, password],
-      (err, row) => {
+      (err, rows) => {
         if (err) {
           console.error(err);
           return res
@@ -213,11 +249,8 @@ const startServer = async () => {
             .json({ success: false, message: "Server error." });
         }
 
-        // Check if the user was found in the database
-        if (row) {
-          // Store user information in the session
-          req.session.user = row;
-          console.log(req.session.user); // Check session data
+        if (rows.length > 0) {
+          req.session.user = rows[0];
           return res.json({
             success: true,
             redirect: "../ranking", // Go one folder above before redirecting to /ranking
@@ -237,108 +270,80 @@ const startServer = async () => {
   });
 
   io.on("connection", async (socket) => {
-    console.log("a user connected");
+    console.log("A user connected");
 
-    /**
-     * save best result
-     */
     socket.on(
       "save-best-result",
       async ({ cookiePhoneNo, cookieName, finalBestTime }) => {
-        let result;
         try {
-          // store the message in the database
-          result = await db.run(
-            "INSERT INTO tbl_ranking (contactNo,name,bestTime) VALUES (?,?,?)",
-            cookiePhoneNo,
-            cookieName,
-            finalBestTime
-          );
-
-          console.log("successfully save the best result"); //broadcast the result to everyone
+          await db
+            .promise() /// convert to async/ await style
+            .query(
+              "INSERT INTO tbl_ranking (contactNo, name, bestTime) VALUES (?, ?, ?)",
+              [cookiePhoneNo, cookieName, finalBestTime]
+            );
+          console.log("Successfully saved the best result");
         } catch (e) {
-          // TODO handle the failure
-          console.log(
-            "Something went wrong in the process of save best result"
-          );
-          return;
+          console.log("Error saving the best result:", e);
         }
       }
     );
 
-    /**
-     * save-cust-info
-     */
     socket.on("save-cust-info", async ({ name, email, contact }) => {
-      let result;
       try {
-        // store the message in the database
-        result = await db.run(
-          "INSERT INTO tbl_user (name,email,contactNo) VALUES (?,?,?)",
-          name,
-          email,
-          contact
-        );
-        console.log("success insert into db");
+        await db
+          .promise()
+          .query(
+            "INSERT INTO tbl_user (name, email, contactNo) VALUES (?, ?, ?)",
+            [name, email, contact]
+          );
+        console.log("Successfully inserted into DB");
       } catch (e) {
-        // TODO handle the failure
-        console.log(e);
-        console.log("Something went wrong in the process of save cust info");
-        return;
+        console.log("Error saving customer info:", e);
       }
     });
 
-    /**
-     * retreieve db result
-     */
-    const job = new CronJob(
-      "* * * * * *", // cronTime
-      async function () {
-        let UsersArr = [];
-        UsersArr = await getUserData();
-        // console.log('test: ' + UsersArr);
-        socket.emit("retrieve-db-result", UsersArr);
-      }, // onTick
-      null, // onComplete
-      true, // start
-      "Asia/Kuala_Lumpur" // timeZone
-    );
+    // // Periodically retrieve DB result
+    // const job = new CronJob(
+    //   "* * * * * *", // cronTime
+    //   async function () {
+    //     let UsersArr = await getUserData(db);
+    //     socket.emit("retrieve-db-result", UsersArr);
+    //   },
+    //   null, // onComplete
+    //   true, // start
+    //   "Asia/Kuala_Lumpur" // timeZone
+    // );
   });
 
-  /**
-   * get user data from db
-   * @returns
-   */
-  const getUserData = async () => {
+  // Get user data from DB
+  const getUserData = async (db) => {
     let localUsersArr = [];
-    let sql = `SELECT * FROM tbl_ranking WHERE bestTime != "" ORDER BY bestTime ASC LIMIT 10`;
+    const sql =
+      "SELECT * FROM tbl_ranking WHERE bestTime != '' ORDER BY bestTime ASC LIMIT 10";
     try {
-      //GET THE DATA FROM DB
-      await db.each(sql, (err, row) => {
-        if (err) {
-          throw err;
-        }
-
-        const user = { id: row.id, name: row.name, bestTime: row.bestTime };
-        //console.log(user);
-        localUsersArr.push(user);
+      const [rows] = await db.promise().query(sql);
+      rows.forEach((row) => {
+        localUsersArr.push({
+          id: row.id,
+          name: row.name,
+          bestTime: row.bestTime,
+        });
       });
     } catch (error) {
       console.error("Error executing database query:", error);
     }
-    // console.log('localUsersArr:', localUsersArr);
     return localUsersArr;
   };
 
-  /**
-   * Close the database connection when the server is stopped
-   */
+  // Close the MySQL connection when the server is stopped
   process.on("SIGINT", () => {
-    db_login.close((err) => {
+    db.end((err) => {
       if (err) {
-        return console.error(err.message);
+        console.error("Error closing MySQL connection:", err.stack);
+      } else {
+        console.log("MySQL connection closed.");
       }
-      console.log("Closed the database connection.");
       process.exit();
     });
   });

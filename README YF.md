@@ -28,6 +28,7 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 3. RUN SERVER.JS
 <pre> node server.js </pre>
 4. when deploy in shared hosting with node.js module -- need change fixed port 3000
+5. need to have .env file when deploy
 
 ## PENDING TASK / TO DO
 
