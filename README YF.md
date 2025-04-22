@@ -32,6 +32,13 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 
 ## PENDING TASK / TO DO
 
+23/4/2025
+
+1. change related code to db / query
+2. use trigger to push data actively to ranking page
+3. dont delete data when generate excel file
+4. insert record to the db
+
 ### YEAR 2025
 
 \*\*\* done change to use public folder -- need checking
