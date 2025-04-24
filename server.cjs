@@ -1,4 +1,3 @@
-//***** current problem -- SERVE ALL THE FILE so no choice frontnend there have tp check again */
 // IMPORTANT : IF THIS VERSION NOT WORKING REVERT BACK TO THE PREVIOUS GIT
 
 require("dotenv").config(); // This will load environment variables from the .env file
@@ -9,10 +8,12 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const { fileURLToPath } = require("url");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 const { CronJob } = require("cron");
 const session = require("express-session");
 const excelJS = require("exceljs");
+const bcrypt = require("bcrypt");
+const saltRounds = 10; // can adjust the number of salt rounds for more security
 
 let date_ob = new Date();
 let date = ("0" + date_ob.getDate()).slice(-2);
@@ -34,78 +35,43 @@ const startServer = async () => {
     queueLimit: 0, // No limit for waiting queries in the queue
   });
 
-  const createTables = () => {
+  const createTables = async () => {
     // **Create 'events' table**
-    db.query(`SHOW TABLES LIKE 'events'`, (err, results) => {
-      if (err) {
-        console.error("Error checking for events table:", err);
-        return;
-      }
-
-      const tableExists = results.length > 0;
-
-      if (!tableExists) {
-        // Create the table and insert the record together
-        db.query(
-          `
-            CREATE TABLE events (
-              event_id INT AUTO_INCREMENT PRIMARY KEY,
-              event_name VARCHAR(255) NOT NULL,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            `,
-          (err, result) => {
-            if (err) {
-              console.error("Error creating events table:", err);
-              return;
-            }
-
-            console.log("Events table created");
-
-            // Insert only once after creation
-            db.query(
-              `INSERT INTO events (event_name) VALUES (?)`,
-              ["Motor Event"],
-              (err, result) => {
-                if (err) {
-                  console.error("Error inserting event:", err);
-                } else {
-                  console.log(
-                    "Sample event inserted with ID:",
-                    result.insertId
-                  );
-                }
-              }
-            );
-          }
+    const [rows] = await db.query(`SHOW TABLES LIKE 'events'`);
+    if (rows.length === 0) {
+      await db.query(`
+        CREATE TABLE events (
+          event_id INT AUTO_INCREMENT PRIMARY KEY,
+          event_name VARCHAR(255) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-      } else {
-        console.log("Events table already exists — skipping creation & insert");
-      }
-    });
+      `);
+
+      console.log("Events table created");
+
+      // Insert only once after creation
+      const [insertResult] = await db.query(
+        `INSERT INTO events (event_name) VALUES (?)`,
+        ["Motor Event"]
+      );
+      console.log("Sample event inserted with ID:", insertResult.insertId);
+    } else {
+      console.log("Events table already exists — skipping creation & insert");
+    }
 
     // **Create 'event_days' table**
-    db.query(
-      `
+    await db.query(`
       CREATE TABLE IF NOT EXISTS event_days (
         event_day_id INT AUTO_INCREMENT PRIMARY KEY,
         event_id INT NOT NULL,
         event_date DATE NOT NULL,
         FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
       );
-    `,
-      (err, result) => {
-        if (err) {
-          console.error("Error creating event_days table:", err);
-        } else {
-          console.log("Event_days table created or already exists");
-        }
-      }
-    );
+    `);
+    console.log("Event_days table created or already exists");
 
     // **Create 'customers' table**
-    db.query(
-      `
+    await db.query(`
       CREATE TABLE IF NOT EXISTS customers (
         customer_id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -116,38 +82,42 @@ const startServer = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (event_day_id) REFERENCES event_days(event_day_id) ON DELETE CASCADE
       );
-    `,
-      (err, result) => {
-        if (err) {
-          console.error("Error creating customers table:", err);
-        } else {
-          console.log("Customers table created or already exists");
-        }
-      }
-    );
+    `);
+    console.log("Customers table created or already exists");
 
     // **Create 'admins' table**
-    db.query(
-      `
-      CREATE TABLE IF NOT EXISTS admins (
-        admin_id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(255) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    const [adminTableRows] = await db.query(`SHOW TABLES LIKE 'admins'`);
+    if (adminTableRows.length === 0) {
+      const password = "admin"; // The password you want to hash
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Create the table and insert the hardcoded row
+      await db.query(`
+        CREATE TABLE admins (
+          admin_id INT AUTO_INCREMENT PRIMARY KEY,
+          username VARCHAR(255) NOT NULL UNIQUE,
+          password_hash VARCHAR(255) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      console.log("Admins table created");
+
+      await db.query(
+        `
+        INSERT INTO admins (username, password_hash)
+        VALUES ('admin', ?)
+        ON DUPLICATE KEY UPDATE username = 'admin';
+      `,
+        [hashedPassword]
       );
-    `,
-      (err, result) => {
-        if (err) {
-          console.error("Error creating admins table:", err);
-        } else {
-          console.log("Admins table created or already exists");
-        }
-      }
-    );
+
+      console.log("Hardcoded admin row inserted or already exists");
+    }
   };
 
   // Execute the function to create tables
-  createTables();
+  await createTables();
 
   /**
    * server config (Required for __dirname and __filename to work in ES modules)
