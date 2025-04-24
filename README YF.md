@@ -2,7 +2,7 @@
 
 This is a simple Markdown file.
 
-## READ ME
+## DONE
 
 - cookie problem -- done
 - dont need set end time / start time of the game -- done
@@ -10,15 +10,17 @@ This is a simple Markdown file.
 - dont need display live ranking button to user -- done
 - add export result fucntion and reset the table -- done?
 - validate phone num -- DONE?
-  -- separate the result page out and create 1 ADMIN login page --- DONE?
+- separate the result page out and create 1 ADMIN login page --- DONE?
+- not working yet for protected route /ranking --- DONE? -- need checking
+- create a endpoint to serve excel file, excel file dont put in public folder -- DONE
+- http://localhost:3000/ -- dont expose port 3000 --- when in live server will not expose -- DONE
 
 ## PROJECT STRUCTURE
 
 http://localhost/racing-start-timer/login/ -- admin module
-http://localhost/racing-start-timer/ -- user module
-test_server.js --- to test server is runnign
+http://localhost/racing-start-timer/ -- player module
 main.js --- front end core game function
-server.js --- backend server main script
+server.cjs --- backend server main script
 ranking page --- redirect to login page when not authenticated -- still got problem
 
 ## DEPLOYMENT
@@ -29,35 +31,30 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 <pre> node server.js </pre>
 4. when deploy in shared hosting with node.js module -- need change fixed port 3000
 5. need to have .env file when deploy
+6. remove node modules folder and reinstall dependency
+7. reupload the whole project to hosting to test
 
 ## PENDING TASK / TO DO
 
 23/4/2025
 
-1. change related code to db / query
+1. change related code to db / query --- PARTIAL DONE?
 2. use trigger to push data actively to ranking page
 3. dont delete data when generate excel file
-4. insert record to the db
+4. insert record to the db, saving permanently
+5. check if the program serving all css/js (is there anything cant load out in 404)
+6. CHECK ALL URL/ENDPOINT
+7. animation for ranking page
+8. test phone can start game?
+9. check css
 
 ### YEAR 2025
 
-\*\*\* done change to use public folder -- need checking
-
-2. change to mysql or redis or firebase (SEARCH HOW TO ADD MYSQL INTO NODE.JS) \*\*\* IMPORTANT
-3. not working yet for protected route /ranking --- related to session/db \*\*\* IMPORTANT
-4. create a endpoint to serve excel file, excel file dont put in public folder \*\*\* done?
-5. put those static file into public folder \*\*\* done?
-6. CHECK ALL URL/ENDPOINT \*\*\* need checking?
-7. BECAUSE MAKE EVERYTHIGN ACCESSIBLE --- SO DONT NEED RUN SERVER.JS ALREADY HAVE SOMETHING CAN WORK -- SHOULD PUT IN PUBLIC \*\*\* done?
-8. ReferenceError: db_login is not defined -- line 174 \*\*\* IMPORTANT
-9. http://localhost:3000/ -- dont expose port 3000
-10. animation for ranking page
+2. change to mysql or redis or firebase (SEARCH HOW TO ADD MYSQL INTO NODE.JS) -- using mysql skip first for firebase
 
 ### YEAR 2023
 
 1. host the app online
-2. test phone can start game?
-3. check css
 
 ## important thing to warn choong :
 
