@@ -4,7 +4,7 @@
 require("dotenv").config(); // This will load environment variables from the .env file
 
 const express = require("express");
-const cors = require("cors");
+//const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
@@ -43,12 +43,28 @@ const startServer = async () => {
         event_name VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `,
+      `,
       (err, result) => {
         if (err) {
           console.error("Error creating events table:", err);
         } else {
           console.log("Events table created or already exists");
+
+          // Insert a sample record after table creation
+          db.query(
+            `INSERT INTO events (event_name) VALUES (?)`,
+            ["Motor Event"],
+            (err, result) => {
+              if (err) {
+                console.error("Error inserting event:", err);
+              } else {
+                console.log(
+                  "Event inserted successfully with ID:",
+                  result.insertId
+                );
+              }
+            }
+          );
         }
       }
     );
@@ -140,17 +156,19 @@ const startServer = async () => {
   /**
    * Use CORS middleware
    */
-  app.use(cors());
+  //app.use(cors());
   app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
   app.use(express.static(path.join(__dirname, "public"))); // Serve only the "public" folder
 
   const server = createServer(app); // Create the http server
 
-  const io = new Server(server, {
-    cors: {
-      origin: "http://localhost/",
-    },
-  });
+  // const io = new Server(server, {
+  //   cors: {
+  //     origin: process.env.CLIENT_ORIGIN || "http://localhost/", // fallback to localhost
+  //   },
+  // });
+
+  const io = new Server(server);
 
   /**
    * SERVE ALL THE FILE
