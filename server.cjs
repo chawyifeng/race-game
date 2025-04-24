@@ -36,38 +36,53 @@ const startServer = async () => {
 
   const createTables = () => {
     // **Create 'events' table**
-    db.query(
-      `
-      CREATE TABLE IF NOT EXISTS events (
-        event_id INT AUTO_INCREMENT PRIMARY KEY,
-        event_name VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      `,
-      (err, result) => {
-        if (err) {
-          console.error("Error creating events table:", err);
-        } else {
-          console.log("Events table created or already exists");
-
-          // Insert a sample record after table creation
-          db.query(
-            `INSERT INTO events (event_name) VALUES (?)`,
-            ["Motor Event"],
-            (err, result) => {
-              if (err) {
-                console.error("Error inserting event:", err);
-              } else {
-                console.log(
-                  "Event inserted successfully with ID:",
-                  result.insertId
-                );
-              }
-            }
-          );
-        }
+    db.query(`SHOW TABLES LIKE 'events'`, (err, results) => {
+      if (err) {
+        console.error("Error checking for events table:", err);
+        return;
       }
-    );
+
+      const tableExists = results.length > 0;
+
+      if (!tableExists) {
+        // Create the table and insert the record together
+        db.query(
+          `
+            CREATE TABLE events (
+              event_id INT AUTO_INCREMENT PRIMARY KEY,
+              event_name VARCHAR(255) NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            `,
+          (err, result) => {
+            if (err) {
+              console.error("Error creating events table:", err);
+              return;
+            }
+
+            console.log("Events table created");
+
+            // Insert only once after creation
+            db.query(
+              `INSERT INTO events (event_name) VALUES (?)`,
+              ["Motor Event"],
+              (err, result) => {
+                if (err) {
+                  console.error("Error inserting event:", err);
+                } else {
+                  console.log(
+                    "Sample event inserted with ID:",
+                    result.insertId
+                  );
+                }
+              }
+            );
+          }
+        );
+      } else {
+        console.log("Events table already exists — skipping creation & insert");
+      }
+    });
 
     // **Create 'event_days' table**
     db.query(
