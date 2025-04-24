@@ -237,35 +237,54 @@ const startServer = async () => {
     }
   });
 
-  // POST Login route
-  app.post("/login", (req, res) => {
+  const bcrypt = require("bcryptjs");
+
+  // POST Login route using async/await and mysql2/promise
+  app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
-    db.query(
-      "SELECT * FROM admins WHERE username = ? AND password = ?",
-      [username, password],
-      (err, rows) => {
-        if (err) {
-          console.error(err);
-          return res
-            .status(500)
-            .json({ success: false, message: "Server error." });
-        }
+    try {
+      // Query the admin by username
+      const [rows] = await db.query("SELECT * FROM admins WHERE username = ?", [
+        username,
+      ]);
 
-        if (rows.length > 0) {
-          req.session.user = rows[0];
-          return res.json({
-            success: true,
-            redirect: "../ranking", // Go one folder above before redirecting to /ranking
-          });
-        } else {
-          return res.json({
-            success: false,
-            message: "Invalid username or password.",
-          });
-        }
+      if (rows.length === 0) {
+        return res.json({
+          success: false,
+          message: "Invalid username or password.",
+        });
       }
-    );
+
+      const admin = rows[0];
+
+      // Compare the hashed password
+      const passwordMatch = await bcrypt.compare(password, admin.password_hash);
+
+      if (!passwordMatch) {
+        return res.json({
+          success: false,
+          message: "Invalid username or password.",
+        });
+      }
+
+      // Save admin to session // dont need save password here
+      req.session.user = {
+        id: admin.admin_id,
+        username: admin.username,
+      };
+
+      res.json({
+        success: true,
+        redirect: "../ranking",
+      });
+    } catch (err) {
+      console.error("Login error:", err);
+      res.status(500).json({
+        success: false,
+        message: "Server error.",
+      });
+    }
   });
 
   server.listen(PORT, () => {
