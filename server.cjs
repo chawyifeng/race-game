@@ -183,6 +183,45 @@ const startServer = async () => {
   }
 
   /**
+   * HELPER FUNCTION TO CHECK IF today event day id is exist, else create it
+   * @returns
+   */
+  async function getOrCreateTodayEventDayId() {
+    const today = new Date().toISOString().split("T")[0];
+
+    try {
+      const [eventRows] = await db.query(
+        `SELECT event_id FROM events ORDER BY created_at DESC LIMIT 1`
+      );
+
+      if (eventRows.length === 0) {
+        throw new Error("No events found in the database.");
+      }
+
+      const eventId = eventRows[0].event_id;
+
+      const [eventDayRows] = await db.query(
+        `SELECT event_day_id FROM event_days WHERE event_date = ? AND event_id = ?`,
+        [today, eventId]
+      );
+
+      if (eventDayRows.length > 0) {
+        return eventDayRows[0].event_day_id;
+      }
+
+      const [insertResult] = await db.query(
+        `INSERT INTO event_days (event_id, event_date) VALUES (?, ?)`,
+        [eventId, today]
+      );
+
+      return insertResult.insertId;
+    } catch (error) {
+      console.error("Error in getOrCreateTodayEventDayId:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Serve the /ranking page only if the user is authenticated
    */
   app.get("/ranking", authenticateUser, (req, res) => {
@@ -289,6 +328,43 @@ const startServer = async () => {
 
   server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
+  });
+
+  io.on("connection", (socket) => {
+    console.log("A user connected");
+
+    // Save best result — assume game_result field is used
+    socket.on(
+      "save-best-result",
+      async ({ cookiePhoneNo, cookieName, finalBestTime }) => {
+        // this is parameter
+        try {
+          await db.query(
+            `UPDATE customers SET game_result = ? WHERE contactNo = ? AND name = ?`,
+            [finalBestTime, cookiePhoneNo, cookieName]
+          );
+          console.log("Successfully saved the best result");
+        } catch (e) {
+          console.log("Error saving the best result:", e);
+        }
+      }
+    );
+
+    // Save new customer info
+    socket.on("save-cust-info", async ({ name, email, contact }) => {
+      try {
+        const event_day_id = await getOrCreateTodayEventDayId();
+
+        await db.query(
+          `INSERT INTO customers (name, email, contactNo, event_day_id) VALUES (?, ?, ?, ?)`,
+          [name, email, contact, event_day_id]
+        );
+
+        console.log("Customer saved with event_day_id:", event_day_id);
+      } catch (e) {
+        console.log("Error saving customer info:", e);
+      }
+    });
   });
 
   io.on("connection", async (socket) => {
