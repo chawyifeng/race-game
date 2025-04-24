@@ -3,7 +3,6 @@
 require("dotenv").config(); // This will load environment variables from the .env file
 
 const express = require("express");
-//const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
@@ -141,18 +140,10 @@ const startServer = async () => {
   /**
    * Use CORS middleware
    */
-  //app.use(cors());
   app.use(express.json()); /// must have this thing to so that req.body can work //recognize the incoming Request Object as strings or arrays
   app.use(express.static(path.join(__dirname, "public"))); // Serve only the "public" folder
 
   const server = createServer(app); // Create the http server
-
-  // const io = new Server(server, {
-  //   cors: {
-  //     origin: process.env.CLIENT_ORIGIN || "http://localhost/", // fallback to localhost
-  //   },
-  // });
-
   const io = new Server(server);
 
   /**
