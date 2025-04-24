@@ -227,10 +227,10 @@ const startServer = async () => {
    */
   async function getTop10PlayerData(db) {
     const sql = "SELECT * FROM customers ORDER BY game_result ASC LIMIT 10";
-  
+
     try {
       const [rows] = await db.query(sql);
-  
+
       // Map rows to desired format directly
       return rows.map((row) => ({
         name: row.name,
@@ -242,154 +242,149 @@ const startServer = async () => {
     }
   }
 
-    /**
-     * Serve the /ranking page only if the user is authenticated
-     */
-    app.get("/ranking", authenticateUser, (req, res) => {
-      res.sendFile("index.html", {
-        root: path.join(__dirname, "public/ranking"),
+  /**
+   * Serve the /ranking page only if the user is authenticated
+   */
+  app.get("/ranking", authenticateUser, (req, res) => {
+    res.sendFile("index.html", {
+      root: path.join(__dirname, "public/ranking"),
+    });
+  });
+
+  /**
+   * download excel function
+   */
+  app.post("/downloadExcel", async (req, res) => {
+    //change from get to post
+    // WRITE DOWNLOAD EXCEL LOGIC
+    const workbook = new excelJS.Workbook(); // Create a new workbook
+    const worksheet = workbook.addWorksheet("Final Result"); // New Worksheet
+    const downloadPath = "./excel"; // Path to download excel
+    const filename = `ranking_${date}${month}${year}_${hours}${minutes}${seconds}.xlsx`;
+    const fullFileName = path.join(downloadPath, filename);
+
+    // //set header of the workbook , the key column must match with add row function
+    worksheet.columns = [
+      { header: "Rank", key: "rank", width: 10 },
+      { header: "Name", key: "name", width: 10 },
+      { header: "Best Time", key: "bestTime", width: 10 },
+    ];
+
+    let top10PlayerArr = await getTop10PlayerData(db); // get user data from MySQL
+
+    //  Looping through User data
+    let counter = 1;
+    top10PlayerArr.forEach((player) => {
+      worksheet.addRow({
+        rank: counter,
+        name: player.name,
+        bestTime: player.bestTime,
       });
+      counter++;
     });
 
-    /**
-     * download excel function
-     */
-    app.post("/downloadExcel", async (req, res) => {
-      //change from get to post
-      // WRITE DOWNLOAD EXCEL LOGIC
-      const workbook = new excelJS.Workbook(); // Create a new workbook
-      const worksheet = workbook.addWorksheet("Final Result"); // New Worksheet
-      const downloadPath = "./excel"; // Path to download excel
-      const filename = `ranking_${date}${month}${year}_${hours}${minutes}${seconds}.xlsx`;
-      const fullFileName = path.join(downloadPath, filename);
-
-      // //set header of the workbook , the key column must match with add row function
-      worksheet.columns = [
-        { header: "Rank", key: "rank", width: 10 },
-        { header: "Name", key: "name", width: 10 },
-        { header: "Best Time", key: "bestTime", width: 10 },
-      ];
-
-      let top10PlayerArr = await getTop10PlayerData(db); // get user data from MySQL
-
-      //  Looping through User data
-      let counter = 1;
-      top10PlayerArr.forEach((player) => {
-        worksheet.addRow({
-          rank: counter,
-          name: player.name,
-          bestTime: player.bestTime,
-        });
-        counter++;
-      });
-
-      // Making first line in excel bold
-      worksheet.getRow(1).eachCell((cell) => {
-        cell.font = { bold: true };
-      });
-
-      try {
-        await workbook.xlsx.writeFile(fullFileName);
-        res.sendFile(filename, { root: "excel" });
-      } catch (err) {
-        console.log(err);
-        res.send({ status: "error", message: "Something went wrong" });
-      }
+    // Making first line in excel bold
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
     });
 
-    // POST Login route using async/await and mysql2/promise
-    app.post("/login", async (req, res) => {
-      const { username, password } = req.body;
+    try {
+      await workbook.xlsx.writeFile(fullFileName);
+      res.sendFile(filename, { root: "excel" });
+    } catch (err) {
+      console.log(err);
+      res.send({ status: "error", message: "Something went wrong" });
+    }
+  });
 
-      try {
-        // Query the admin by username
-        const [rows] = await db.query(
-          "SELECT * FROM admins WHERE username = ?",
-          [username]
-        );
+  // POST Login route using async/await and mysql2/promise
+  app.post("/login", async (req, res) => {
+    const { username, password } = req.body;
 
-        if (rows.length === 0) {
-          return res.json({
-            success: false,
-            message: "Invalid username or password.",
-          });
-        }
+    try {
+      // Query the admin by username
+      const [rows] = await db.query("SELECT * FROM admins WHERE username = ?", [
+        username,
+      ]);
 
-        const admin = rows[0];
-
-        // Compare the hashed password
-        const passwordMatch = await bcrypt.compare(
-          password,
-          admin.password_hash
-        );
-
-        if (!passwordMatch) {
-          return res.json({
-            success: false,
-            message: "Invalid username or password.",
-          });
-        }
-
-        // Save admin to session // dont need save password here
-        req.session.user = {
-          id: admin.admin_id,
-          username: admin.username,
-        };
-
-        res.json({
-          success: true,
-          redirect: "../ranking",
-        });
-      } catch (err) {
-        console.error("Login error:", err);
-        res.status(500).json({
+      if (rows.length === 0) {
+        return res.json({
           success: false,
-          message: "Server error.",
+          message: "Invalid username or password.",
         });
       }
-    });
 
-    server.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}/`);
-    });
+      const admin = rows[0];
 
-    io.on("connection", (socket) => {
-      console.log("A user connected");
+      // Compare the hashed password
+      const passwordMatch = await bcrypt.compare(password, admin.password_hash);
 
-      // Save best result — assume game_result field is used
-      socket.on(
-        "save-best-result",
-        async ({ cookiePhoneNo, cookieName, finalBestTime }) => {
-          // this is parameter
-          try {
-            await db.query(
-              `UPDATE customers SET game_result = ? WHERE contactNo = ? AND name = ?`,
-              [finalBestTime, cookiePhoneNo, cookieName]
-            );
-            console.log("Successfully saved the best result");
-          } catch (e) {
-            console.log("Error saving the best result:", e);
-          }
-        }
-      );
+      if (!passwordMatch) {
+        return res.json({
+          success: false,
+          message: "Invalid username or password.",
+        });
+      }
 
-      // Save new customer info
-      socket.on("save-cust-info", async ({ name, email, contact }) => {
-        try {
-          const event_day_id = await getOrCreateTodayEventDayId();
+      // Save admin to session // dont need save password here
+      req.session.user = {
+        id: admin.admin_id,
+        username: admin.username,
+      };
 
-          await db.query(
-            `INSERT INTO customers (name, email, contactNo, event_day_id) VALUES (?, ?, ?, ?)`,
-            [name, email, contact, event_day_id]
-          );
-
-          console.log("Customer saved with event_day_id:", event_day_id);
-        } catch (e) {
-          console.log("Error saving customer info:", e);
-        }
+      res.json({
+        success: true,
+        redirect: "../ranking",
       });
+    } catch (err) {
+      console.error("Login error:", err);
+      res.status(500).json({
+        success: false,
+        message: "Server error.",
+      });
+    }
+  });
+
+  server.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}/`);
+  });
+
+  io.on("connection", (socket) => {
+    console.log("A user connected");
+
+    // Save best result — assume game_result field is used
+    socket.on(
+      "save-best-result",
+      async ({ cookiePhoneNo, cookieName, finalBestTime }) => {
+        // this is parameter
+        try {
+          await db.query(
+            `UPDATE customers SET game_result = ? WHERE contactNo = ? AND name = ?`,
+            [finalBestTime, cookiePhoneNo, cookieName]
+          );
+          console.log("Successfully saved the best result");
+        } catch (e) {
+          console.log("Error saving the best result:", e);
+        }
+      }
+    );
+
+    // Save new customer info
+    socket.on("save-cust-info", async ({ name, email, contact }) => {
+      try {
+        const event_day_id = await getOrCreateTodayEventDayId();
+
+        await db.query(
+          `INSERT INTO customers (name, email, contactNo, event_day_id) VALUES (?, ?, ?, ?)`,
+          [name, email, contact, event_day_id]
+        );
+
+        console.log("Customer saved with event_day_id:", event_day_id);
+      } catch (e) {
+        console.log("Error saving customer info:", e);
+      }
     });
-  };
+  });
 
   // Handle graceful shutdown
   process.on("SIGINT", async () => {
