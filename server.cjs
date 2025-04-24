@@ -339,16 +339,17 @@ const startServer = async () => {
     return localUsersArr;
   };
 
-  // Close the MySQL connection when the server is stopped
-  process.on("SIGINT", () => {
-    db.end((err) => {
-      if (err) {
-        console.error("Error closing MySQL connection:", err.stack);
-      } else {
-        console.log("MySQL connection closed.");
-      }
+  // Handle graceful shutdown
+  process.on("SIGINT", async () => {
+    try {
+      console.log("Closing MySQL connection...");
+      await db.end(); // Await pool shutdown properly
+      console.log("MySQL connection closed.");
+    } catch (err) {
+      console.error("Error closing MySQL connection:", err);
+    } finally {
       process.exit();
-    });
+    }
   });
 };
 
