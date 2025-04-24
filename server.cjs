@@ -156,19 +156,6 @@ const startServer = async () => {
   const io = new Server(server);
 
   /**
-   * SERVE ALL THE FILE
-   */
-
-  // seems like dont need this one
-  // app.get("/", (req, res) => {
-  //   res.sendFile("index.html", { root: path.join(__dirname, "public/") });
-  // });
-
-  // app.get("/login", (req, res) => {
-  //   res.sendFile("index.html", { root: path.join(__dirname, "public/login") });
-  // });
-
-  /**
    * HELPER FUNCTION TO CHECK IF A USER IS AUTHENTICATED IN RANKING MODULE/ADMIN MODULE
    * @param {*} req
    * @param {*} res
@@ -247,7 +234,7 @@ const startServer = async () => {
    */
   app.get("/ranking", authenticateUser, (req, res) => {
     res.sendFile("index.html", {
-      root: path.join(__dirname, "public/ranking"),
+      root: path.join(__dirname, "ranking"),
     });
   });
 
