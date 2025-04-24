@@ -276,8 +276,6 @@ const startServer = async () => {
     }
   });
 
-  const bcrypt = require("bcryptjs");
-
   // POST Login route using async/await and mysql2/promise
   app.post("/login", async (req, res) => {
     const { username, password } = req.body;
