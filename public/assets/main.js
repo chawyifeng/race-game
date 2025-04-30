@@ -194,7 +194,6 @@ function startGame() {
   let x = document.cookie;
   let CustPopupModal = getCookie("racing_start_timer_popup_modal");
   if (CustPopupModal !== "true") {
-    setCookie("racing_start_timer_popup_modal", true);
     $("#popupCust").modal("show");
   } else {
     //direct start game
