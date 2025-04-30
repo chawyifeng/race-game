@@ -33,7 +33,7 @@ function formatTime(time) {
 /**
  * display best time
  */
-if (bestTime != Infinity) {
+if (bestTime !== Infinity) {
   best.textContent = formatTime(bestTime);
 
   //insert best time into database here
@@ -193,7 +193,7 @@ function tap(event) {
 function startGame() {
   let x = document.cookie;
   let CustPopupModal = getCookie("racing_start_timer_popup_modal");
-  if (CustPopupModal != "true") {
+  if (CustPopupModal !== "true") {
     setCookie("racing_start_timer_popup_modal", true);
     $("#popupCust").modal("show");
   } else {
@@ -209,7 +209,7 @@ function startGame() {
 function validateUserSubmitResult() {
   let cookieSubmitted = getCookie("racing_start_timer_submitted_result");
 
-  if (cookieSubmitted == "true") {
+  if (cookieSubmitted === "true") {
     $("#clickable-area").replaceWith(
       '<div class="text-center end-game-title">' +
         "Game Over! You have submitted the best result!" +
@@ -304,7 +304,7 @@ function submitFormRaceGame() {
   let cookiePhoneNo = getCookie("racing_start_timer_phoneNo");
   let cookieName = getCookie("racing_start_timer_name");
 
-  if (finalBestTime != Infinity) {
+  if (finalBestTime !== Infinity) {
     // get best time means got both of info ady
     try {
       //set cookie here
@@ -379,10 +379,10 @@ function getCookie(cname) {
   let ca = decodedCookie.split(";");
   for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
-    while (c.charAt(0) == " ") {
+    while (c.charAt(0) === " ") {
       c = c.substring(1);
     }
-    if (c.indexOf(name) == 0) {
+    if (c.indexOf(name) === 0) {
       return c.substring(name.length, c.length);
     }
   }
