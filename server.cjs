@@ -14,6 +14,8 @@ const excelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 const saltRounds = 10; // can adjust the number of salt rounds for more security
 const initDB = require('./initDB.cjs');
+const createPool = require('./db.cjs');
+const createTables = require('./createTable.cjs');
 
 let date_ob = new Date();
 let date = ("0" + date_ob.getDate()).slice(-2);
@@ -25,102 +27,14 @@ let seconds = date_ob.getSeconds();
 
 const startServer = async () => {
 
-  await initDB(); //INIT DB HERE
-
-  // **Set up MySQL POOL**
-  const db = mysql.createPool({
-    host: process.env.DB_HOST, // Using environment variable for host
-    user: process.env.DB_USER, // Using environment variable for user
-    password: process.env.DB_PASSWORD, // Using environment variable for password
-    database: process.env.DB_NAME, // Using environment variable for database
-    waitForConnections: true, // If the pool runs out of connections, it will wait for one to be released
-    connectionLimit: 10, // Max number of connections allowed in the pool
-    queueLimit: 0, // No limit for waiting queries in the queue
-  });
-
-  const createTables = async () => {
-    // **Create 'events' table**
-    const [rows] = await db.query(`SHOW TABLES LIKE 'events'`);
-    if (rows.length === 0) {
-      await db.query(`
-        CREATE TABLE events (
-          event_id INT AUTO_INCREMENT PRIMARY KEY,
-          event_name VARCHAR(255) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-
-      console.log("Events table created");
-
-      // Insert only once after creation
-      const [insertResult] = await db.query(
-        `INSERT INTO events (event_name) VALUES (?)`,
-        ["Motor Event"]
-      );
-      console.log("Sample event inserted with ID:", insertResult.insertId);
-    } else {
-      console.log("Events table already exists — skipping creation & insert");
-    }
-
-    // **Create 'event_days' table**
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS event_days (
-        event_day_id INT AUTO_INCREMENT PRIMARY KEY,
-        event_id INT NOT NULL,
-        event_date DATE NOT NULL,
-        FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
-      );
-    `);
-    console.log("Event_days table created or already exists");
-
-    // **Create 'customers' table**
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS customers (
-        customer_id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        contactNo VARCHAR(255) NOT NULL UNIQUE,
-        event_day_id INT NOT NULL,
-        game_result VARCHAR(255),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (event_day_id) REFERENCES event_days(event_day_id) ON DELETE CASCADE
-      );
-    `);
-    console.log("Customers table created or already exists");
-
-    // **Create 'admins' table**
-    const [adminTableRows] = await db.query(`SHOW TABLES LIKE 'admins'`);
-    if (adminTableRows.length === 0) {
-      const password = "admin"; // The password you want to hash
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-      // Create the table and insert the hardcoded row
-      await db.query(`
-        CREATE TABLE admins (
-          admin_id INT AUTO_INCREMENT PRIMARY KEY,
-          username VARCHAR(255) NOT NULL UNIQUE,
-          password_hash VARCHAR(255) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-      console.log("Admins table created");
-
-      await db.query(
-        `
-        INSERT INTO admins (username, password_hash)
-        VALUES ('admin', ?)
-        ON DUPLICATE KEY UPDATE username = 'admin';
-      `,
-        [hashedPassword]
-      );
-
-      console.log("Hardcoded admin row inserted or already exists");
-    }
-  };
-
-  // Execute the function to create tables
-  await createTables();
+  try {
+    await initDB(); // Step 1: Create DB if needed
+    const db = createPool(); // Step 2: Connect using pool
+    await createTables(db); // Step 3: Create tables using the pool
+  } catch (err) {
+    console.error("Setup failed:", err);
+    process.exit(1); //Exit immediately with error code
+  }
 
   /**
    * server config (Required for __dirname and __filename to work in ES modules)
