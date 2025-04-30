@@ -36,10 +36,30 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 
 ## PENDING TASK / TO DO
 
+30/4/2025
+1. ranking logic
+
+const rankings = [];
+
+  socket.on("submitItem", (data) => {
+    rankings.push(data);
+    rankings.sort((a, b) => b.score - a.score);
+    io.emit("updateRanking", rankings);
+  });
+
+
+2. CHANGE TO UPDATE customers SET game_result = ? WHERE contactNo = ? AND email = ? AND name = ?
+
+3. DONT NEED SAVE EVERYTHING IN COOKIE
+
+4. CHECK ALL COOKIE VARIABLE 
+
+5. save 1 copy into db , 1 copy into socketio 
+
+
 23/4/2025
 
 1. change related code to db / query --- PARTIAL DONE?
-2. use trigger to push data actively to ranking page
 3. dont delete data when generate excel file
 4. insert record to the db, saving permanently
 5. check if the program serving all css/js (is there anything cant load out in 404)
