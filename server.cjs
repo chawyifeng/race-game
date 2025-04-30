@@ -13,6 +13,7 @@ const session = require("express-session");
 const excelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 const saltRounds = 10; // can adjust the number of salt rounds for more security
+const initDB = require('./initDB.cjs');
 
 let date_ob = new Date();
 let date = ("0" + date_ob.getDate()).slice(-2);
@@ -23,7 +24,10 @@ let minutes = date_ob.getMinutes();
 let seconds = date_ob.getSeconds();
 
 const startServer = async () => {
-  // **Set up MySQL connection**
+
+  await initDB(); //INIT DB HERE
+
+  // **Set up MySQL POOL**
   const db = mysql.createPool({
     host: process.env.DB_HOST, // Using environment variable for host
     user: process.env.DB_USER, // Using environment variable for user
