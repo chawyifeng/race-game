@@ -6,13 +6,10 @@ const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
-const { fileURLToPath } = require("url");
-const mysql = require("mysql2/promise");
 const { CronJob } = require("cron");
 const session = require("express-session");
 const excelJS = require("exceljs");
 const bcrypt = require("bcrypt");
-const saltRounds = 10; // can adjust the number of salt rounds for more security
 const initDB = require("./initDB.cjs");
 const createPool = require("./db.cjs");
 const createTables = require("./createTable.cjs");
@@ -293,6 +290,21 @@ const startServer = async () => {
         process.exit();
       }
     });
+
+    // const job = new CronJob(
+    //   "* * * * * *", // cronTime
+    //   async function () {
+    //     let UsersArr = [];
+    //     UsersArr = await getUserData();
+    //     // console.log('test: ' + UsersArr);
+    //     socket.emit("retrieve-db-result", UsersArr);
+    //   }, // onTick
+    //   null, // onComplete
+    //   true, // start
+    //   "Asia/Kuala_Lumpur" // timeZone
+    // );
+    // pull data function here 
+    
   } catch (err) {
     console.error("Setup failed:", err);
     process.exit(1); //Exit immediately with error code
