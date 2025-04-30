@@ -26,9 +26,9 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 ## DEPLOYMENT
 
 1. RUN NPM INSTALL
-2. CHANGE ORIGIN FOR SOCKET IO
-3. RUN SERVER.JS
-<pre> node server.js </pre>
+2. CREATE DB RACE-GAME
+3. RUN SERVER.CJS
+<pre> node server.CJS </pre>
 4. when deploy in shared hosting with node.js module -- need change fixed port 3000
 5. need to have .env file when deploy
 6. remove node modules folder and reinstall dependency
