@@ -37,36 +37,37 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 ## PENDING TASK / TO DO
 
 30/4/2025
+
+0. change cookie to db, dont need cookie ady
+
 1. ranking logic
 
 const rankings = [];
 
-  socket.on("submitItem", (data) => {
-    rankings.push(data);
-    rankings.sort((a, b) => b.score - a.score);
-    io.emit("updateRanking", rankings);
-  });
-
+socket.on("submitItem", (data) => {
+rankings.push(data);
+rankings.sort((a, b) => b.score - a.score);
+io.emit("updateRanking", rankings);
+});
 
 2. CHANGE TO UPDATE customers SET game_result = ? WHERE contactNo = ? AND email = ? AND name = ?
 
 3. DONT NEED SAVE EVERYTHING IN COOKIE
 
-4. CHECK ALL COOKIE VARIABLE 
+4. CHECK ALL COOKIE VARIABLE
 
-5. save 1 copy into db , 1 copy into socketio 
-
+5. save 1 copy into db , 1 copy into socketio
 
 23/4/2025
 
 1. change related code to db / query --- PARTIAL DONE?
-3. dont delete data when generate excel file
-4. insert record to the db, saving permanently
-5. check if the program serving all css/js (is there anything cant load out in 404)
-6. CHECK ALL URL/ENDPOINT
-7. animation for ranking page
-8. test phone can start game?
-9. check css
+2. dont delete data when generate excel file
+3. insert record to the db, saving permanently
+4. check if the program serving all css/js (is there anything cant load out in 404)
+5. CHECK ALL URL/ENDPOINT
+6. animation for ranking page
+7. test phone can start game?
+8. check css
 
 ### YEAR 2025
 
