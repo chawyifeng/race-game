@@ -36,6 +36,9 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 
 ## PENDING TASK / TO DO
 
+NEW FLOW:
+![alt text](image.png)
+
 30/4/2025
 
 0. change cookie to db, dont need cookie ady
