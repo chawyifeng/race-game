@@ -71,6 +71,17 @@ const startServer = async () => {
     }
 
     /**
+     * Helper function to get the time until midnight
+     * @returns
+     */
+    function getTimeUntilMidnight() {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(23, 59, 59, 999); // Set to 23:59:59.999 of the current day
+      return midnight.getTime() - now.getTime(); // Time in milliseconds until midnight
+    }
+
+    /**
      * HELPER FUNCTION TO CHECK IF today event day id is exist, else create it
      * @returns
      */
@@ -78,6 +89,7 @@ const startServer = async () => {
       const today = new Date().toISOString().split("T")[0];
 
       try {
+        //[]  MEANS Destructuring HERE
         const [eventRows] = await db.query(
           `SELECT event_id FROM events ORDER BY created_at DESC LIMIT 1`
         );
@@ -88,6 +100,7 @@ const startServer = async () => {
 
         const eventId = eventRows[0].event_id;
 
+        //[]  MEANS Destructuring HERE
         const [eventDayRows] = await db.query(
           `SELECT event_day_id FROM event_days WHERE event_date = ? AND event_id = ?`,
           [today, eventId]
@@ -97,6 +110,7 @@ const startServer = async () => {
           return eventDayRows[0].event_day_id; /// if found data, return the data and end here
         }
 
+        //[]  MEANS Destructuring HERE
         const [insertResult] = await db.query(
           `INSERT INTO event_days (event_id, event_date) VALUES (?, ?)`,
           [eventId, today]
@@ -185,6 +199,55 @@ const startServer = async () => {
       }
     });
 
+    /**
+     * register customer function
+     */
+    app.post("/registerCust", async (req, res) => {
+      const { contact, name, email } = req.body; // Extract data from the request body
+      try {
+        let custID;
+
+        // First, check if the customer already exists in the database by their contact number
+        const [custRows] = await db.query(
+          `SELECT * FROM customers WHERE contactNo = ?`,
+          [contact]
+        );
+
+        // If the customer is not registered, register them
+        if (custRows.length === 0) {
+          // Get today's event day ID
+          const event_day_id = await getOrCreateTodayEventDayId();
+
+          const [insertResult] = await db.query(
+            `INSERT INTO customers (name, email, contactNo, event_day_id) VALUES (?, ?, ?, ?)`,
+            [name, email, contact, event_day_id]
+          );
+
+          custID = insertResult.insertId;
+        } else {
+          // If the customer is already registered, save the customer ID
+          custID = custRows[0].customer_id;
+        }
+
+        // Set the user ID in a cookie
+        res.cookie("racing_start_timer_custID", custID, {
+          httpOnly: true, // Helps protect against cross-site scripting (XSS)
+          maxAge: getTimeUntilMidnight, // Cookie will expire at midnight
+          path: "/", // Cookie is valid for all routes
+          sameSite: "Strict", // Protect against CSRF
+        });
+
+        // Send success message back to client
+        res.status(200).send("Cookie has been set and customer info saved!");
+        console.log("Cookie has been set and customer info saved!");
+        console.log("Customer saved with event_day_id:", event_day_id);
+      } catch (e) {
+        console.log("Error saving customer info:", e);
+        // Send error response if something goes wrong
+        res.status(500).send("Error saving customer info");
+      }
+    });
+
     // POST Login route using async/await and mysql2/promise
     app.post("/login", async (req, res) => {
       const { username, password } = req.body;
@@ -260,22 +323,6 @@ const startServer = async () => {
           }
         }
       );
-
-      // Save new customer info
-      socket.on("save-cust-info", async ({ name, email, contact }) => {
-        try {
-          const event_day_id = await getOrCreateTodayEventDayId();
-
-          await db.query(
-            `INSERT INTO customers (name, email, contactNo, event_day_id) VALUES (?, ?, ?, ?)`,
-            [name, email, contact, event_day_id]
-          );
-
-          console.log("Customer saved with event_day_id:", event_day_id);
-        } catch (e) {
-          console.log("Error saving customer info:", e);
-        }
-      });
     });
 
     // Handle graceful shutdown
