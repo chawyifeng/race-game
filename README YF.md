@@ -39,6 +39,10 @@ ranking page --- redirect to login page when not authenticated -- still got prob
 NEW FLOW:
 ![alt text](image.png)
 
+8/5/2025
+
+1. done implement step 1 of the picture above
+
 30/4/2025
 
 0. change cookie to db, dont need cookie ady
