@@ -255,29 +255,46 @@ $(document).ready(function () {
 });
 
 //submit customer detail
-function submitFormPopUpCust() {
+async function submitFormPopUpCust() {
   // on submit
 
   const txtName = $("#txtName").val();
   const txtEmail = $("#txtEmail").val();
   const txtContact = $("#txtContact").val();
 
-  setCookie("racing_start_timer_phoneNo", txtContact); // to be save again with bestresult
-  setCookie("racing_start_timer_name", txtName); // to be save again with bestresult
+  // to be remove in future
+  //setCookie("racing_start_timer_phoneNo", txtContact); // to be save again with bestresult
+  //setCookie("racing_start_timer_name", txtName); // to be save again with bestresult
 
   try {
-    socket.emit("save-cust-info", {
-      name: txtName,
-      email: txtEmail,
-      contact: txtContact,
+    const response = await fetch(`/registerCust`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        txtContact,
+        txtName,
+        txtEmail,
+      }),
     });
-    $("#popupCust .alert")
-      .removeClass("alert-danger")
-      .addClass("alert-success");
-    $("#popupCust .alert").html("Sucessfully save the information.");
-    $("#popupCust .alert").fadeOut("slow");
-    //close popup modal here
-    $("#popupCust").modal("hide");
+
+    const result = await response.json();
+
+    if (result.success) {
+      $("#popupCust .alert")
+        .removeClass("alert-danger")
+        .addClass("alert-success");
+      $("#popupCust .alert").html(result.message);
+      $("#popupCust .alert").fadeOut("slow");
+      //close popup modal here
+      $("#popupCust").modal("hide");
+    } else {
+      $("#popupCust .alert")
+        .removeClass("alert-success")
+        .addClass("alert-danger");
+      $("#popupCust .alert").html(result.message);
+    }
 
     // set cookie so that the customer popup wont show again
     // Cookies.set("racing_start_timer_popup_modal", true, { expires: 1 });

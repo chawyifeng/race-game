@@ -238,13 +238,20 @@ const startServer = async () => {
         });
 
         // Send success message back to client
-        res.status(200).send("Cookie has been set and customer info saved!");
+        res.status(200).json({
+          success: true,
+          message: "Sucessfully save the customer information.",
+        });
+
         console.log("Cookie has been set and customer info saved!");
         console.log("Customer saved with event_day_id:", event_day_id);
       } catch (e) {
         console.log("Error saving customer info:", e);
         // Send error response if something goes wrong
-        res.status(500).send("Error saving customer info");
+        res.status(500).json({
+          success: false,
+          message: "Error saving customer information.",
+        });
       }
     });
 
