@@ -94,7 +94,7 @@ const startServer = async () => {
         );
 
         if (eventDayRows.length > 0) {
-          return eventDayRows[0].event_day_id;
+          return eventDayRows[0].event_day_id; /// if found data, return the data and end here
         }
 
         const [insertResult] = await db.query(
@@ -303,8 +303,7 @@ const startServer = async () => {
     //   true, // start
     //   "Asia/Kuala_Lumpur" // timeZone
     // );
-    // pull data function here 
-    
+    // pull data function here
   } catch (err) {
     console.error("Setup failed:", err);
     process.exit(1); //Exit immediately with error code
