@@ -273,9 +273,9 @@ async function submitFormPopUpCust() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        txtContact,
-        txtName,
-        txtEmail,
+        contact: txtContact,
+        name: txtName,
+        email: txtEmail,
       }),
     });
 

@@ -232,7 +232,7 @@ const startServer = async () => {
         // Set the user ID in a cookie
         res.cookie("racing_start_timer_custID", custID, {
           httpOnly: true, // Helps protect against cross-site scripting (XSS)
-          maxAge: getTimeUntilMidnight, // Cookie will expire at midnight
+          maxAge: getTimeUntilMidnight(), // Cookie will expire at midnight
           path: "/", // Cookie is valid for all routes
           sameSite: "Strict", // Protect against CSRF
         });
@@ -244,7 +244,6 @@ const startServer = async () => {
         });
 
         console.log("Cookie has been set and customer info saved!");
-        console.log("Customer saved with event_day_id:", event_day_id);
       } catch (e) {
         console.log("Error saving customer info:", e);
         // Send error response if something goes wrong
